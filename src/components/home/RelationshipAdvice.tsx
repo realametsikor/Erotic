@@ -26,7 +26,7 @@ export default function RelationshipAdvice() {
           {articles.map((article) => (
             <Link
               key={article.id}
-              href="/articles"
+              href={`/articles/${article.slug}`}
               className="group block rounded-xl bg-surface border border-border hover:border-primary/50 transition-all overflow-hidden"
             >
               <div className="aspect-[4/3] bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
