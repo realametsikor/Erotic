@@ -11,6 +11,7 @@ import {
   Grid3X3,
   List,
   Star,
+  Crown,
 } from "lucide-react";
 import { articles, articleCategories } from "@/data/content";
 import type { Article } from "@/data/content";
@@ -190,11 +191,15 @@ function ArticleCard({ article }: { article: Article }) {
     >
       <div className="aspect-[4/3] bg-gradient-to-br from-primary/20 to-accent/20 relative flex items-center justify-center">
         <BookOpen className="w-10 h-10 text-white/20" />
-        {article.featured && (
+        {article.isPremium ? (
+          <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-accent/90 text-white text-xs font-medium flex items-center gap-1">
+            <Crown className="w-3 h-3" /> Premium
+          </span>
+        ) : article.featured ? (
           <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-accent/90 text-white text-xs font-medium flex items-center gap-1">
             <Star className="w-3 h-3" /> Featured
           </span>
-        )}
+        ) : null}
         <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/60 text-white text-xs">
           {article.category}
         </span>
@@ -240,9 +245,11 @@ function ArticleListItem({ article }: { article: Article }) {
           <h3 className="font-semibold text-sm truncate group-hover:text-primary-light transition-colors">
             {article.title}
           </h3>
-          {article.featured && (
+          {article.isPremium ? (
+            <Crown className="w-4 h-4 text-accent flex-shrink-0" />
+          ) : article.featured ? (
             <Star className="w-4 h-4 text-accent flex-shrink-0" />
-          )}
+          ) : null}
         </div>
         <p className="text-xs text-muted mt-0.5 line-clamp-1">
           {article.excerpt}
