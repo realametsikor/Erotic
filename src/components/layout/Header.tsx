@@ -19,6 +19,7 @@ const navLinks = [
   { href: "/articles", label: "Articles", icon: BookOpen },
   { href: "/quizzes", label: "Quizzes", icon: HelpCircle },
   { href: "/confessions", label: "Confessions", icon: MessageSquare },
+  { href: "/ask", label: "Q&A", icon: HelpCircle },
   { href: "/premium", label: "Premium", icon: Crown },
 ];
 
