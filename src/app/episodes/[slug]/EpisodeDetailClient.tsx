@@ -19,6 +19,7 @@ import {
   Facebook,
   Link2,
 } from "lucide-react";
+import PremiumLock from "@/components/PremiumLock";
 import type { Episode } from "@/data/episodes";
 
 interface Props {
@@ -95,11 +96,18 @@ export default function EpisodeDetailClient({
           </div>
 
           {/* Audio Player */}
-          <div className="bg-surface rounded-2xl border border-border p-6">
+          <div className="relative bg-surface rounded-2xl border border-border p-6">
+            {episode.isPremium && (
+              <PremiumLock
+                title="Premium Episode"
+                message="Subscribe to listen to this full episode and unlock all premium content."
+                compact
+              />
+            )}
             <div className="flex items-center gap-4 mb-4">
               <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-accent text-white flex items-center justify-center hover:opacity-90 transition-opacity flex-shrink-0"
+                onClick={() => !episode.isPremium && setIsPlaying(!isPlaying)}
+                className={`w-14 h-14 rounded-full bg-gradient-to-r from-primary to-accent text-white flex items-center justify-center flex-shrink-0 ${episode.isPremium ? "opacity-50 cursor-not-allowed" : "hover:opacity-90 transition-opacity"}`}
               >
                 {isPlaying ? (
                   <Pause className="w-6 h-6" />
@@ -120,8 +128,9 @@ export default function EpisodeDetailClient({
                 min="0"
                 max="100"
                 value={progress}
-                onChange={(e) => setProgress(Number(e.target.value))}
+                onChange={(e) => !episode.isPremium && setProgress(Number(e.target.value))}
                 className="w-full"
+                disabled={episode.isPremium}
               />
               <div className="flex items-center justify-between text-xs text-muted">
                 <span>
@@ -167,45 +176,82 @@ export default function EpisodeDetailClient({
               <p className="text-muted leading-relaxed">{episode.summary}</p>
             </div>
 
-            {/* Highlights */}
-            <div>
-              <h2 className="text-xl font-bold mb-3">Key Highlights</h2>
-              <ul className="space-y-2">
-                {episode.highlights.map((hl, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-3 text-muted"
-                  >
-                    <span className="w-6 h-6 rounded-full bg-primary/20 text-primary-light text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                      {i + 1}
-                    </span>
-                    {hl}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Transcript */}
-            <div>
-              <button
-                onClick={() => setShowTranscript(!showTranscript)}
-                className="flex items-center gap-2 text-lg font-bold hover:text-primary-light transition-colors"
-              >
-                Transcript
-                {showTranscript ? (
-                  <ChevronUp className="w-5 h-5" />
-                ) : (
-                  <ChevronDown className="w-5 h-5" />
-                )}
-              </button>
-              {showTranscript && (
-                <div className="mt-3 p-4 rounded-xl bg-surface border border-border">
-                  <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
-                    {episode.transcript}
-                  </p>
+            {/* Premium content gate */}
+            {episode.isPremium ? (
+              <div className="relative min-h-[300px]">
+                <PremiumLock
+                  title="Premium Episode Content"
+                  message="Unlock full highlights, transcript, and more with a Heartcast premium membership."
+                />
+                {/* Blurred preview of highlights */}
+                <div className="opacity-30 select-none pointer-events-none">
+                  <div>
+                    <h2 className="text-xl font-bold mb-3">Key Highlights</h2>
+                    <ul className="space-y-2">
+                      {episode.highlights.slice(0, 2).map((hl, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-3 text-muted"
+                        >
+                          <span className="w-6 h-6 rounded-full bg-primary/20 text-primary-light text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                            {i + 1}
+                          </span>
+                          {hl}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-6">
+                    <h2 className="text-xl font-bold mb-3">Transcript</h2>
+                    <p className="text-sm text-muted">
+                      {episode.transcript.slice(0, 200)}...
+                    </p>
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <>
+                {/* Highlights */}
+                <div>
+                  <h2 className="text-xl font-bold mb-3">Key Highlights</h2>
+                  <ul className="space-y-2">
+                    {episode.highlights.map((hl, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-3 text-muted"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-primary/20 text-primary-light text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                          {i + 1}
+                        </span>
+                        {hl}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Transcript */}
+                <div>
+                  <button
+                    onClick={() => setShowTranscript(!showTranscript)}
+                    className="flex items-center gap-2 text-lg font-bold hover:text-primary-light transition-colors"
+                  >
+                    Transcript
+                    {showTranscript ? (
+                      <ChevronUp className="w-5 h-5" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5" />
+                    )}
+                  </button>
+                  {showTranscript && (
+                    <div className="mt-3 p-4 rounded-xl bg-surface border border-border">
+                      <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
+                        {episode.transcript}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             {/* Comments section placeholder */}
             <div>

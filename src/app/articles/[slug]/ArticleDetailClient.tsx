@@ -10,11 +10,13 @@ import {
   Share2,
   Heart,
   User,
+  Crown,
   Twitter,
   Facebook,
   Link2,
   ArrowLeft,
 } from "lucide-react";
+import PremiumLock from "@/components/PremiumLock";
 import type { Article } from "@/data/content";
 
 interface Props {
@@ -58,6 +60,11 @@ export default function ArticleDetailClient({
                 Featured
               </span>
             )}
+            {article.isPremium && (
+              <span className="px-3 py-1 rounded-full bg-accent/20 text-accent text-xs font-medium flex items-center gap-1">
+                <Crown className="w-3 h-3" /> Premium
+              </span>
+            )}
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold mb-4 leading-tight">
@@ -95,69 +102,124 @@ export default function ArticleDetailClient({
         <div className="grid lg:grid-cols-3 gap-10">
           {/* Main content */}
           <div className="lg:col-span-2">
-            <article className="prose prose-invert max-w-none">
-              {article.content.split("\n\n").map((block, i) => {
-                if (block.startsWith("## ")) {
-                  return (
-                    <h2
-                      key={i}
-                      className="text-xl font-bold mt-8 mb-3 text-foreground"
-                    >
-                      {block.replace("## ", "")}
-                    </h2>
-                  );
-                }
-                if (block.startsWith("### ")) {
-                  return (
-                    <h3
-                      key={i}
-                      className="text-lg font-semibold mt-6 mb-2 text-foreground"
-                    >
-                      {block.replace("### ", "")}
-                    </h3>
-                  );
-                }
-                if (block.startsWith("- ")) {
-                  const items = block.split("\n").filter((l) => l.startsWith("- "));
-                  return (
-                    <ul key={i} className="space-y-1.5 my-3">
-                      {items.map((item, j) => (
-                        <li
-                          key={j}
-                          className="flex items-start gap-2 text-muted leading-relaxed"
+            {article.isPremium ? (
+              <>
+                {/* Show first two content blocks as preview */}
+                <article className="prose prose-invert max-w-none">
+                  {article.content.split("\n\n").slice(0, 2).map((block, i) => {
+                    if (block.startsWith("## ")) {
+                      return (
+                        <h2
+                          key={i}
+                          className="text-xl font-bold mt-8 mb-3 text-foreground"
                         >
-                          <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                          <span>{renderInlineFormatting(item.replace(/^- /, ""))}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  );
-                }
-                if (/^\d+\./.test(block)) {
-                  const items = block.split("\n").filter((l) => /^\d+\./.test(l));
+                          {block.replace("## ", "")}
+                        </h2>
+                      );
+                    }
+                    return (
+                      <p key={i} className="text-muted leading-relaxed my-3">
+                        {renderInlineFormatting(block)}
+                      </p>
+                    );
+                  })}
+                </article>
+
+                {/* Lock overlay for remaining content */}
+                <div className="relative min-h-[350px] mt-4">
+                  <PremiumLock
+                    title="Premium Article"
+                    message="Subscribe to read the full article and access all premium content on Heartcast."
+                  />
+                  {/* Faded preview of locked content */}
+                  <div className="opacity-20 select-none pointer-events-none">
+                    <article className="prose prose-invert max-w-none">
+                      {article.content.split("\n\n").slice(2, 5).map((block, i) => {
+                        if (block.startsWith("## ")) {
+                          return (
+                            <h2
+                              key={i}
+                              className="text-xl font-bold mt-8 mb-3 text-foreground"
+                            >
+                              {block.replace("## ", "")}
+                            </h2>
+                          );
+                        }
+                        return (
+                          <p key={i} className="text-muted leading-relaxed my-3">
+                            {block.slice(0, 150)}...
+                          </p>
+                        );
+                      })}
+                    </article>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <article className="prose prose-invert max-w-none">
+                {article.content.split("\n\n").map((block, i) => {
+                  if (block.startsWith("## ")) {
+                    return (
+                      <h2
+                        key={i}
+                        className="text-xl font-bold mt-8 mb-3 text-foreground"
+                      >
+                        {block.replace("## ", "")}
+                      </h2>
+                    );
+                  }
+                  if (block.startsWith("### ")) {
+                    return (
+                      <h3
+                        key={i}
+                        className="text-lg font-semibold mt-6 mb-2 text-foreground"
+                      >
+                        {block.replace("### ", "")}
+                      </h3>
+                    );
+                  }
+                  if (block.startsWith("- ")) {
+                    const items = block.split("\n").filter((l) => l.startsWith("- "));
+                    return (
+                      <ul key={i} className="space-y-1.5 my-3">
+                        {items.map((item, j) => (
+                          <li
+                            key={j}
+                            className="flex items-start gap-2 text-muted leading-relaxed"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                            <span>{renderInlineFormatting(item.replace(/^- /, ""))}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    );
+                  }
+                  if (/^\d+\./.test(block)) {
+                    const items = block.split("\n").filter((l) => /^\d+\./.test(l));
+                    return (
+                      <ol key={i} className="space-y-1.5 my-3">
+                        {items.map((item, j) => (
+                          <li
+                            key={j}
+                            className="flex items-start gap-3 text-muted leading-relaxed"
+                          >
+                            <span className="w-6 h-6 rounded-full bg-primary/20 text-primary-light text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                              {j + 1}
+                            </span>
+                            <span>{renderInlineFormatting(item.replace(/^\d+\.\s*/, ""))}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    );
+                  }
                   return (
-                    <ol key={i} className="space-y-1.5 my-3">
-                      {items.map((item, j) => (
-                        <li
-                          key={j}
-                          className="flex items-start gap-3 text-muted leading-relaxed"
-                        >
-                          <span className="w-6 h-6 rounded-full bg-primary/20 text-primary-light text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                            {j + 1}
-                          </span>
-                          <span>{renderInlineFormatting(item.replace(/^\d+\.\s*/, ""))}</span>
-                        </li>
-                      ))}
-                    </ol>
+                    <p key={i} className="text-muted leading-relaxed my-3">
+                      {renderInlineFormatting(block)}
+                    </p>
                   );
-                }
-                return (
-                  <p key={i} className="text-muted leading-relaxed my-3">
-                    {renderInlineFormatting(block)}
-                  </p>
-                );
-              })}
-            </article>
+                })}
+              </article>
+            )}
 
             {/* Back to articles */}
             <div className="mt-12 pt-8 border-t border-border">
