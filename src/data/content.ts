@@ -1,10 +1,23 @@
 export interface Confession {
   id: string;
+  slug: string;
   title: string;
   preview: string;
+  content: string;
   category: string;
   commentCount: number;
   date: string;
+}
+
+export interface SexEdGuide {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  icon: string;
+  content: string;
+  keyTopics: string[];
+  readTime: string;
 }
 
 export interface QuizOption {
@@ -80,81 +93,108 @@ export const confessionCategories = [
 export const confessions: Confession[] = [
   {
     id: "1",
+    slug: "i-still-think-about-my-ex-every-day",
     title: "I still think about my ex every day",
     preview:
       "It's been two years since we broke up, but not a single day goes by without me thinking about what could have been...",
+    content:
+      "It's been two years since we broke up, but not a single day goes by without me thinking about what could have been. I see their favorite coffee order at the cafe and my chest tightens. A song comes on shuffle and suddenly I'm back in their car on a summer night, windows down, laughing about nothing.\n\nPeople tell me to move on. They say time heals everything. But what they don't tell you is that healing isn't linear. Some days I feel strong, like I've finally turned a corner. Then I'll catch a scent that smells like them, or I'll want to text them about something funny that happened, and it all comes rushing back.\n\nThe hardest part isn't missing them — it's missing who I was when I was with them. I was lighter, more spontaneous, more myself. Now I feel like I'm constantly performing a version of \"I'm fine\" for everyone around me.\n\nI've tried dating again. I've been on apps, gone to events, said yes to setups from friends. But every time, I find myself comparing. No one laughs the same way. No one makes me feel that same electricity.\n\nI know this isn't healthy. I know I'm holding onto something that doesn't exist anymore. But letting go feels like admitting that the best love of my life is already behind me. And I'm not ready to accept that.",
     category: "Breakup Stories",
     commentCount: 47,
     date: "2026-03-05",
   },
   {
     id: "2",
+    slug: "my-partner-doesnt-know-about-my-past",
     title: "My partner doesn't know about my past",
     preview:
       "There's something from my past that I've never told my partner. I'm afraid that if they knew, everything would change...",
+    content:
+      "There's something from my past that I've never told my partner. I'm afraid that if they knew, everything would change. We've been together for four years now, and every day this secret sits heavier on my chest.\n\nBefore we met, I went through a really dark period. I made choices I'm not proud of — choices that shaped who I am but also choices I've worked incredibly hard to move past. I've been to therapy. I've done the work. I'm not that person anymore.\n\nBut my partner fell in love with the version of me I've built since then. They don't know about the messy, broken version that came before. And I'm terrified that if they find out, they'll see me differently. They'll question everything.\n\nSometimes I catch them looking at me with so much love and trust, and guilt floods through me. Not because I've done anything wrong in our relationship, but because I feel like they're loving an incomplete picture.\n\nMy therapist says I get to choose what I share and when. That everyone has a past. That my partner chose me, and my past is part of what made me the person they chose. But knowing that logically and feeling it emotionally are two very different things.\n\nI want to tell them. I've rehearsed it a hundred times in the shower, in the car, in my head before falling asleep. But every time I open my mouth, fear wins. What if this is the thing that breaks us?",
     category: "Secrets",
     commentCount: 82,
     date: "2026-03-02",
   },
   {
     id: "3",
+    slug: "i-fell-in-love-with-my-best-friend",
     title: "I fell in love with my best friend",
     preview:
       "We've been friends for 8 years. Last month something shifted. I can't stop thinking about them in a different way...",
+    content:
+      "We've been friends for 8 years. Last month something shifted. I can't stop thinking about them in a different way, and it's messing with everything.\n\nIt happened during a road trip. Nothing dramatic — we were just driving, talking about life like we always do. But when they turned to laugh at something I said, the light hit their face and time just... stopped. My heart did something it's never done around them before.\n\nSince then, I've been replaying every interaction we've ever had. Were there signs I missed? Have they ever felt this way too? That hug that lasted a beat too long last year — was that something? The way they always remember the small things I mention in passing — is that just who they are, or is it more?\n\nThe worst part is that this friendship is the most important relationship in my life. They know me better than anyone. They've seen me at my lowest and stuck around. They're the first person I want to tell good news to and the first person I call when things fall apart.\n\nIf I say something and they don't feel the same way, I could lose all of that. The easy silence. The inside jokes. The comfort of knowing someone truly gets you. That's not something you can just get back after making it awkward.\n\nBut if I don't say anything, I have to sit across from them at dinner pretending my pulse isn't racing. I have to watch them date other people and smile like it doesn't gut me. I have to keep being the best friend when what I really want is to be something more.\n\nI don't know which risk is scarier — the risk of losing them, or the risk of never knowing what we could have been.",
     category: "Secret Crushes",
     commentCount: 63,
     date: "2026-02-28",
   },
   {
     id: "4",
+    slug: "weve-been-long-distance-for-3-years",
     title: "We've been long distance for 3 years",
     preview:
       "Everyone says it won't work. My family thinks I'm wasting my time. But every video call reminds me why I keep holding on...",
+    content:
+      "Everyone says it won't work. My family thinks I'm wasting my time. But every video call reminds me why I keep holding on. Three years, two time zones, and thousands of miles between us — and somehow this is still the most real relationship I've ever been in.\n\nWe met at a conference. Three days. That's all it took. By the end of the first night, I knew this person was different. We talked until sunrise, and when we had to part ways at the airport, I felt something physically tear inside me.\n\nThe first year was exciting. The visits, the countdowns, the airport arrivals where you run into each other's arms like you're in a movie. But by year two, the novelty wears off and you're left with the reality: goodbyes that get harder, holidays spent on FaceTime, and a constant, low-grade ache of missing someone.\n\nMy friends don't get it. \"Just date someone here,\" they say, like love is something you can swap out for convenience. My mom asks me when I'm going to find someone \"real,\" as if the person I've built a life with — emotionally, mentally, spiritually — is somehow less legitimate because they're not in the same zip code.\n\nBut here's what they don't see: the 2 AM calls when one of us can't sleep. The handwritten letters that arrive when you least expect them. The way we've learned to communicate better than any couple I know because words are all we have. We can't rely on physical presence to smooth things over. We have to actually talk.\n\nWe have a plan. Eighteen more months and one of us is moving. We've mapped it all out. But some days, eighteen months feels like a lifetime. And on those days, all I have is the sound of their voice saying, \"We're going to make it. I promise.\"",
     category: "Long Distance",
     commentCount: 91,
     date: "2026-02-25",
   },
   {
     id: "5",
+    slug: "i-said-i-love-you-and-they-didnt-say-it-back",
     title: "I said 'I love you' and they didn't say it back",
     preview:
       "Three months in, I couldn't hold it in anymore. I told them how I felt. The silence that followed was the longest of my life...",
+    content:
+      "Three months in, I couldn't hold it in anymore. I told them how I felt. The silence that followed was the longest of my life.\n\nWe were lying on the couch watching a movie. Nothing special about the moment — maybe that's why it felt right. No pressure, no grand gesture. Just us, comfortable, and my heart so full it felt like it would burst if I didn't let the words out.\n\n\"I love you,\" I said. Just like that. Quiet. Certain.\n\nThey turned to look at me, and for a split second I saw something flash across their face — surprise, maybe tenderness, maybe panic. Then they smiled, kissed my forehead, and said, \"You're really special to me.\"\n\nYou're really special to me.\n\nNot \"I love you too.\" Not even close. My stomach dropped but I smiled and turned back to the movie like my world hadn't just tilted on its axis.\n\nThey didn't pull away after that. If anything, they held me closer. But the silence where those four words should have been echoed louder than anything else that night.\n\nI've been replaying it for weeks now. Was it too soon? Did I misread everything? They still text me good morning. They still plan dates. They still look at me in that way that makes me forget how to breathe. But they haven't said it.\n\nMy friends say to give it time, that everyone moves at their own pace. But there's a specific kind of vulnerability hangover that comes from saying the most honest thing you've ever said and getting a diplomatic response in return.\n\nI don't regret saying it. I'd rather be the person who loves openly than the person who holds back out of fear. But I'd be lying if I said the waiting doesn't hurt.",
     category: "Dating Fails",
     commentCount: 55,
     date: "2026-02-20",
   },
   {
     id: "6",
+    slug: "happily-married-but-sometimes-feel-lonely",
     title: "I'm happily married but sometimes feel lonely",
     preview:
       "From the outside we look perfect. Two kids, nice house, good jobs. But some nights I lie awake feeling like we're roommates...",
+    content:
+      "From the outside we look perfect. Two kids, nice house, good jobs. But some nights I lie awake feeling like we're roommates who share a mortgage and a bedtime routine.\n\nI love my spouse. I truly do. They're a wonderful parent, a good person, and my partner in every practical sense. But somewhere between the school runs and the grocery lists and the \"did you pay the electric bill\" conversations, we lost the spark. Not the love — the spark.\n\nWe don't fight. That's what makes it tricky to explain. There's nothing wrong. But there's nothing that feels deeply right either. We exist in this comfortable middle ground where everything functions but nothing ignites.\n\nI miss being looked at with desire. I miss spontaneous dates that don't require scheduling around the babysitter. I miss conversations that go deeper than logistics. I miss being touched — not just the routine goodnight kiss, but the kind of touch that says \"I see you, I want you, I choose you.\"\n\nI brought it up once. I said I felt disconnected. They looked hurt, then confused, then said, \"But we're fine. We're good.\" And maybe to them, we are. Maybe functional equals good in their eyes. But in mine, there's a gap between fine and fulfilled that's slowly widening.\n\nI've started journaling because I don't know who else to tell. Telling friends feels like betrayal. Telling a therapist feels like admitting failure. So I write. And I wonder if they feel it too but are just better at ignoring it.\n\nI don't want to leave. I want to find our way back to each other. I just don't know how to bridge the distance when we're sleeping in the same bed.",
     category: "Marriage",
     commentCount: 112,
     date: "2026-02-18",
   },
   {
     id: "7",
+    slug: "i-sabotage-every-good-relationship",
     title: "I sabotage every good relationship I'm in",
     preview:
       "The moment things start going well, I find a reason to push them away. I know it's a pattern. I just don't know how to stop...",
+    content:
+      "The moment things start going well, I find a reason to push them away. I know it's a pattern. I just don't know how to stop.\n\nIt always starts the same way. I meet someone great. We click. The butterflies come. For a few weeks, maybe a month, everything is perfect. I let myself hope. I let myself imagine a future.\n\nAnd then, like clockwork, the voice starts. \"They'll leave eventually.\" \"You're not enough.\" \"They're going to see the real you and run.\" So instead of waiting for the inevitable, I create it. I pick fights over nothing. I get distant. I test their patience until they snap. And when they finally walk away, I tell myself, \"See? I knew they would.\"\n\nThe last person I did this to was probably the best thing that ever happened to me. Patient, kind, emotionally intelligent — everything I say I want. And I torpedoed it in three months flat. Accused them of not caring when they clearly did. Went cold when they reached out. Made them feel like they were the problem when the only problem was me.\n\nThey sent me one final message: \"I care about you, but I can't keep fighting to prove it. I hope you find whatever you're looking for.\" I read it every few days and feel sick.\n\nI know where this comes from. Childhood stuff. An inconsistent parent who taught me that love is conditional and temporary. A teenage heartbreak that confirmed the theory. Years of believing I'm fundamentally unlovable, so I make sure everyone else believes it too.\n\nI started therapy last month. It's hard. Sitting with someone and saying out loud, \"I destroy good things because I'm afraid of being destroyed\" is one of the most painful sentences I've ever spoken. But I'm tired. I'm tired of watching love walk away and pretending I don't care.",
     category: "Secrets",
     commentCount: 74,
     date: "2026-02-15",
   },
   {
     id: "8",
+    slug: "my-crush-liked-my-story-and-i-panicked",
     title: "My crush liked my story and I panicked",
     preview:
       "They viewed my story within 30 seconds. Then they liked it. I've been drafting a DM for two hours. Send help...",
+    content:
+      "They viewed my story within 30 seconds. Then they liked it. I've been drafting a DM for two hours. Send help.\n\nOkay, let me back up. I've had a crush on this person for about six months. We follow each other on Instagram but we're not close — more like acquaintances from a friend group who occasionally interact at parties. But every time I see them, my brain short-circuits.\n\nSo today I posted a story — nothing special, just a sunset from my balcony with a song lyric overlay. Within thirty seconds (yes, I checked), they viewed it. Then they tapped the heart reaction. THE HEART. Not the laughing face. Not the fire. The heart.\n\nMy rational brain says it means nothing. People tap hearts on stories all the time. It's basically the social media equivalent of a head nod. But my crush brain? My crush brain has already planned our wedding.\n\nI've been trying to write a casual reply for the last two hours. Here are some drafts I've discarded:\n\n\"Hey thanks! Great sunset right?\" — Too boring.\n\"Glad you liked it :)\" — Too eager.\n\"The view was almost as good as you\" — ABSOLUTELY NOT.\n\nMy best friend is on the phone telling me to just send something, anything. But what if I send the wrong thing and they leave me on read? What if I don't send anything and they think I'm not interested? What if this is the universe giving me a window and I'm about to slam it shut because I can't compose a three-word message?\n\nThe anxiety is so absurd that it's almost funny. Almost. I'm a functioning adult who can give presentations at work, negotiate deadlines, and parallel park on the first try. But one heart reaction from the right person and I'm reduced to a puddle of overthinking.\n\nI'll probably end up sending something aggressively casual at 11 PM and then lying awake analyzing their response time. This is fine. Everything is fine.",
     category: "Secret Crushes",
     commentCount: 38,
     date: "2026-02-12",
   },
   {
     id: "9",
+    slug: "i-went-on-a-date-with-my-exs-friend",
     title: "I went on a date with my ex's friend",
     preview:
       "It wasn't planned. We bumped into each other at a coffee shop and ended up talking for three hours. Now I don't know what to do...",
+    content:
+      "It wasn't planned. We bumped into each other at a coffee shop and ended up talking for three hours. Now I don't know what to do.\n\nMy ex and I broke up eight months ago. It was mutual — or at least as mutual as breakups can be. We'd grown apart, wanted different things, recognized it, and ended things without drama. We're not close anymore, but we're not enemies either. Polite distance.\n\nTheir friend — let's call them Jordan — was always part of the extended group. We'd chatted at parties, exchanged memes in group chats, nothing more. But running into them alone was different. Without the buffer of the group, I actually got to know them. And they're... incredible.\n\nWe talked about everything. Travel, childhood memories, fears, dreams, the kind of deep conversation you rarely have with someone you barely know. When the coffee shop started closing, we moved to a bench outside and kept going. By the time I checked my phone, three hours had passed.\n\nThey texted me the next day asking if I wanted to grab dinner. My stomach flipped. I said yes before my brain could talk me out of it.\n\nDinner turned into a walk. The walk turned into ice cream. Ice cream turned into sitting in their car talking until midnight. And now here I am, feeling something real for someone who is technically in my ex's orbit.\n\nThe guilt is complicated. My ex and I aren't together. I don't owe them control over who I date. But there's an unwritten rule, isn't there? An unspoken code? My friends are split — half say \"go for it, life's short,\" and half say \"it's messy, don't.\"\n\nI keep thinking about what Jordan said at dinner: \"Sometimes the right people show up at unexpected times.\" Maybe the timing is wrong. Or maybe it's exactly right and I'm just too afraid of the mess to find out.",
     category: "Dating Fails",
     commentCount: 66,
     date: "2026-02-08",
@@ -1225,35 +1265,82 @@ export function getRelatedArticles(
     .slice(0, limit);
 }
 
-export const sexEdGuides = [
+export const sexEdGuides: SexEdGuide[] = [
   {
     id: "1",
+    slug: "consent-and-boundaries",
     title: "Consent & Boundaries",
     description: "Understanding enthusiastic consent and setting healthy boundaries",
     icon: "Shield",
+    readTime: "8 min read",
+    keyTopics: ["Enthusiastic consent", "Setting boundaries", "Recognizing red flags", "Communicating limits"],
+    content:
+      "## What Is Enthusiastic Consent?\n\nConsent is more than just the absence of \"no.\" Enthusiastic consent means a clear, excited, and freely given \"yes\" — every single time. It's an ongoing conversation, not a one-time checkbox. True consent is informed, reversible, given freely, enthusiastic, and specific.\n\n## Why Boundaries Matter\n\nBoundaries are the foundation of every healthy relationship. They define what you're comfortable with, what you need, and where your limits lie. Having strong boundaries isn't about building walls — it's about creating a space where both partners can feel safe and respected.\n\n## How to Set and Communicate Boundaries\n\nSetting boundaries starts with self-awareness. Take time to understand your own comfort levels before communicating them to a partner. Use clear, direct language: \"I'm comfortable with...\" or \"I need...\" instead of vague hints. Remember that boundaries can change over time, and that's perfectly normal.\n\n## Recognizing and Respecting Limits\n\nA partner who respects your boundaries will never pressure, guilt, or manipulate you into changing them. Watch for signs of boundary violations: dismissing your feelings, pushing past stated limits, or making you feel guilty for saying no. A healthy partner celebrates your boundaries as part of who you are.\n\n## Consent in Long-Term Relationships\n\nConsent doesn't expire after the first date or after marriage. Long-term partners still need to check in regularly. Desire fluctuates, comfort levels evolve, and what felt right last month might not feel right today. Keep the conversation open and ongoing.",
   },
   {
     id: "2",
+    slug: "healthy-intimacy",
     title: "Healthy Intimacy",
     description: "Building fulfilling intimate connections with trust and respect",
     icon: "Heart",
+    readTime: "10 min read",
+    keyTopics: ["Building trust", "Emotional safety", "Physical intimacy", "Vulnerability in relationships"],
+    content:
+      "## The Foundation of Healthy Intimacy\n\nHealthy intimacy begins long before the physical. It starts with emotional safety — the feeling that you can be your full, authentic self without fear of judgment or rejection. When emotional intimacy is strong, physical intimacy naturally deepens and becomes more meaningful.\n\n## Building Trust Over Time\n\nTrust isn't built in grand gestures; it's built in small, consistent moments. Showing up when you say you will. Keeping confidences. Being honest even when it's uncomfortable. These micro-moments of reliability create the bedrock on which intimacy flourishes.\n\n## The Role of Vulnerability\n\nVulnerability is often seen as weakness, but in relationships, it's a superpower. Sharing your fears, insecurities, and desires with a partner creates a depth of connection that surface-level interactions can never achieve. The courage to be vulnerable invites your partner to do the same.\n\n## Physical Intimacy Beyond the Physical\n\nPhysical intimacy encompasses far more than sex. It includes how you touch each other in everyday moments — a hand on the shoulder, a lingering hug, eye contact across a room. These small physical connections maintain a sense of closeness and desire throughout the relationship.\n\n## Navigating Intimacy Challenges\n\nEvery relationship faces intimacy challenges at some point. Stress, life changes, health issues, and emotional distance can all impact your intimate connection. The key is addressing these challenges together, with patience and without blame. Seeking professional guidance from a therapist or counselor is a sign of strength, not weakness.",
   },
   {
     id: "3",
+    slug: "relationship-psychology",
     title: "Relationship Psychology",
     description: "The science behind attraction, attachment, and lasting love",
     icon: "Brain",
+    readTime: "12 min read",
+    keyTopics: ["Attachment styles", "Love psychology", "Relationship patterns", "Emotional intelligence"],
+    content:
+      "## Understanding Attachment Styles\n\nAttachment theory, originally developed by John Bowlby and later expanded by researchers like Mary Ainsworth, explains how our early childhood experiences shape the way we connect in adult relationships. There are four primary attachment styles: secure, anxious, avoidant, and disorganized.\n\n## Secure Attachment\n\nSecurely attached individuals feel comfortable with intimacy and independence. They communicate openly, handle conflict constructively, and trust their partners. About 50-60% of adults have a secure attachment style. If you don't, the good news is that attachment styles can shift over time with awareness and effort.\n\n## Anxious Attachment\n\nPeople with anxious attachment crave closeness but constantly worry about their partner's commitment. They may seek excessive reassurance, overanalyze texts and behavior, and fear abandonment. Understanding this pattern is the first step toward developing more secure relationship behaviors.\n\n## Avoidant Attachment\n\nAvoidant individuals value independence and may feel uncomfortable with too much closeness. They might pull away when things get serious, suppress emotions, or prioritize self-reliance. This doesn't mean they don't want love — they've simply learned to protect themselves by maintaining distance.\n\n## The Science of Lasting Love\n\nResearch by Dr. John Gottman reveals that lasting relationships are built on friendship, admiration, and turning toward each other during small moments. The \"magic ratio\" for stable relationships is 5:1 — five positive interactions for every negative one. Love isn't just a feeling; it's a series of daily choices.\n\n## Breaking Unhealthy Patterns\n\nMany of us unconsciously repeat relationship patterns learned in childhood. Recognizing these patterns — through therapy, self-reflection, or honest conversations — is essential for growth. You can rewrite your love story, but it starts with understanding the one you've been telling yourself.",
   },
   {
     id: "4",
+    slug: "sexual-communication",
     title: "Sexual Communication",
     description: "How to talk openly about desires, needs, and preferences",
     icon: "MessageCircle",
+    readTime: "9 min read",
+    keyTopics: ["Talking about desires", "Active listening", "Navigating differences", "Building comfort"],
+    content:
+      "## Why Communication Matters\n\nThe number one predictor of sexual satisfaction in relationships isn't technique or frequency — it's communication. Partners who can openly discuss their desires, boundaries, and experiences report significantly higher levels of intimacy and fulfillment. Yet for many people, talking about sex feels harder than actually having it.\n\n## Starting the Conversation\n\nIf you've never had an open conversation about sex with your partner, start small. Choose a comfortable, low-pressure setting — not in the bedroom, not during or immediately after intimacy. Frame the conversation positively: \"I'd love to talk about what makes us both feel good\" rather than focusing on complaints or deficiencies.\n\n## How to Express Your Needs\n\nUse \"I\" statements to share your desires without putting pressure on your partner. \"I really enjoy when...\" or \"I've been curious about...\" invites collaboration rather than defensiveness. Be specific, honest, and open to hearing your partner's perspective in return.\n\n## Active Listening in Intimate Conversations\n\nListening is just as important as speaking. When your partner shares something vulnerable, resist the urge to react defensively or make it about you. Reflect back what you hear: \"So you're saying you'd like more...\" This shows respect and ensures you truly understand each other.\n\n## Navigating Differences in Desire\n\nIt's completely normal for partners to have different levels of desire or different preferences. The goal isn't to make your desires identical — it's to find a space where both partners feel heard, respected, and satisfied. Compromise doesn't mean sacrifice; it means creative collaboration.\n\n## Ongoing Check-Ins\n\nSexual communication isn't a one-time conversation. As your relationship evolves, so do your needs and desires. Regular check-ins — casual, kind, and curiosity-driven — keep your intimate connection alive and growing.",
   },
   {
     id: "5",
+    slug: "emotional-connection",
     title: "Emotional Connection",
     description: "Deepening emotional bonds for more meaningful relationships",
     icon: "Sparkles",
+    readTime: "11 min read",
+    keyTopics: ["Emotional availability", "Deep listening", "Shared experiences", "Maintaining connection"],
+    content:
+      "## What Is Emotional Connection?\n\nEmotional connection is the feeling that your partner truly sees, understands, and values you — not just the polished version of you, but the messy, complicated, real you. It's the difference between being in a relationship and feeling truly known.\n\n## The Building Blocks of Emotional Intimacy\n\nEmotional connection is built through consistent, intentional actions: being present during conversations (phones down, eyes up), remembering the small things your partner mentions, and showing up during both celebrations and struggles. It's not about grand romantic gestures — it's about the daily deposits into your emotional bank account.\n\n## The Art of Deep Listening\n\nMost of us listen to respond rather than to understand. Deep listening means giving your full attention, asking follow-up questions, and sitting with your partner's emotions without trying to fix them. Sometimes the most connecting thing you can say is, \"Tell me more about that.\"\n\n## Vulnerability as a Bridge\n\nEmotional connection deepens when both partners are willing to be vulnerable. This means sharing not just your highlights but your fears, failures, and insecurities. Vulnerability is a bridge — when one person crosses it, it invites the other to meet them in the middle.\n\n## Maintaining Connection During Life Transitions\n\nCareer changes, parenthood, loss, and other life transitions can strain emotional connection. During these times, it's crucial to prioritize your relationship intentionally. Schedule time together, check in about how you're both feeling, and remember that maintaining connection takes effort — especially when life gets busy.\n\n## Reconnecting When You've Drifted Apart\n\nIf you feel emotionally disconnected from your partner, don't panic. Distance happens in every relationship. The path back starts with honesty: \"I feel like we've drifted, and I want to find our way back.\" From there, small steps — a date night, a meaningful conversation, a shared activity — can rebuild the bridge.",
   },
 ];
+
+export function getSexEdGuideBySlug(slug: string): SexEdGuide | undefined {
+  return sexEdGuides.find((guide) => guide.slug === slug);
+}
+
+export function getConfessionBySlug(slug: string): Confession | undefined {
+  return confessions.find((c) => c.slug === slug);
+}
+
+export function getRelatedConfessions(currentSlug: string, limit = 3): Confession[] {
+  const current = getConfessionBySlug(currentSlug);
+  if (!current) return confessions.slice(0, limit);
+  return confessions
+    .filter((c) => c.slug !== currentSlug && c.category === current.category)
+    .slice(0, limit)
+    .concat(
+      confessions
+        .filter((c) => c.slug !== currentSlug && c.category !== current.category)
+        .slice(0, limit)
+    )
+    .slice(0, limit);
+}
