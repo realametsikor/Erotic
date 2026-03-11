@@ -19,7 +19,10 @@ import {
   ArrowRight,
   ChevronDown,
   ChevronUp,
+  Clock,
 } from "lucide-react";
+import { articles } from "@/data/content";
+import PremiumLock from "@/components/PremiumLock";
 
 const tiers = [
   {
@@ -181,6 +184,8 @@ export default function PremiumPage() {
     "monthly"
   );
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const premiumArticles = articles.filter((a) => a.isPremium);
 
   return (
     <div className="min-h-screen">
@@ -432,6 +437,65 @@ export default function PremiumPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Premium Content Preview */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary-light text-sm font-medium mb-4">
+              <Lock className="w-4 h-4" />
+              Premium Preview
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3">
+              A Taste of What Awaits
+            </h2>
+            <p className="text-muted max-w-xl mx-auto">
+              Premium members get access to in-depth articles written by
+              relationship experts, therapists, and coaches.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {premiumArticles.map((article) => (
+              <div
+                key={article.id}
+                className="group relative rounded-xl bg-surface border border-border overflow-hidden"
+              >
+                <div className="aspect-[4/3] bg-gradient-to-br from-primary/20 to-accent/20 relative flex items-center justify-center">
+                  <BookOpen className="w-10 h-10 text-white/20" />
+                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-primary/90 text-white text-xs font-medium flex items-center gap-1">
+                    <Crown className="w-3 h-3" /> Premium
+                  </span>
+                  <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/60 text-white text-xs">
+                    {article.category}
+                  </span>
+                </div>
+                <div className="p-4 space-y-2">
+                  <h3 className="font-semibold text-sm leading-snug line-clamp-2">
+                    {article.title}
+                  </h3>
+                  <p className="text-xs text-muted line-clamp-2">
+                    {article.excerpt}
+                  </p>
+                  <div className="flex items-center gap-2 text-xs text-muted">
+                    <Clock className="w-3 h-3" />
+                    <span>{article.readTime}</span>
+                  </div>
+                </div>
+                <PremiumLock compact />
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <a
+              href="#plans"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-accent text-white font-semibold hover:opacity-90 transition-opacity text-sm"
+            >
+              <Sparkles className="w-4 h-4" />
+              Unlock All Premium Content
+            </a>
           </div>
         </div>
       </section>
