@@ -8,6 +8,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { sexEdGuides } from "@/data/content";
+import type { SexEdGuide } from "@/data/content";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Shield,
@@ -36,7 +37,7 @@ export default function SexEdGuides() {
             return (
               <Link
                 key={guide.id}
-                href="/sex-education"
+                href={`/sex-education#guide-${guide.slug}`}
                 className="group p-5 rounded-xl bg-surface border border-border hover:border-primary/50 transition-all text-center"
               >
                 <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center group-hover:from-primary/30 group-hover:to-accent/30 transition-colors">

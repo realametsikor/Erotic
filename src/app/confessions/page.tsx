@@ -11,8 +11,8 @@ import {
   X,
   Heart,
   ChevronDown,
-  ChevronUp,
 } from "lucide-react";
+import Link from "next/link";
 import { confessions, confessionCategories } from "@/data/content";
 import type { Confession } from "@/data/content";
 
@@ -75,8 +75,10 @@ export default function ConfessionsPage() {
 
     const newConfession: Confession = {
       id: `local-${Date.now()}`,
+      slug: `confession-${Date.now()}`,
       title: formData.title.trim(),
       preview: formData.preview.trim(),
+      content: formData.preview.trim(),
       category: formData.category,
       commentCount: 0,
       date: new Date().toISOString().split("T")[0],
@@ -299,7 +301,6 @@ export default function ConfessionsPage() {
 }
 
 function ConfessionCard({ confession }: { confession: Confession }) {
-  const [expanded, setExpanded] = useState(false);
   const [liked, setLiked] = useState(false);
 
   return (
@@ -307,32 +308,20 @@ function ConfessionCard({ confession }: { confession: Confession }) {
       <span className="inline-block px-2 py-0.5 rounded-full bg-accent/10 text-accent text-xs font-medium mb-3">
         {confession.category}
       </span>
-      <h3 className="font-semibold text-sm mb-2 group-hover:text-accent transition-colors">
-        &ldquo;{confession.title}&rdquo;
-      </h3>
-      <p
-        className={`text-xs text-muted leading-relaxed ${
-          expanded ? "" : "line-clamp-3"
-        }`}
-      >
+      <Link href={`/confessions/${confession.slug}`}>
+        <h3 className="font-semibold text-sm mb-2 group-hover:text-accent transition-colors">
+          &ldquo;{confession.title}&rdquo;
+        </h3>
+      </Link>
+      <p className="text-xs text-muted leading-relaxed line-clamp-3">
         {confession.preview}
       </p>
-      {confession.preview.length > 120 && (
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1 text-xs text-accent mt-1 hover:underline"
-        >
-          {expanded ? (
-            <>
-              Show less <ChevronUp className="w-3 h-3" />
-            </>
-          ) : (
-            <>
-              Read more <ChevronDown className="w-3 h-3" />
-            </>
-          )}
-        </button>
-      )}
+      <Link
+        href={`/confessions/${confession.slug}`}
+        className="flex items-center gap-1 text-xs text-accent mt-1 hover:underline"
+      >
+        Read full story <ChevronDown className="w-3 h-3 rotate-[-90deg]" />
+      </Link>
       <div className="flex items-center justify-between mt-4">
         <div className="flex items-center gap-2 text-xs text-muted">
           <MessageCircle className="w-3 h-3" />

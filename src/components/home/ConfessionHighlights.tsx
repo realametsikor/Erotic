@@ -28,7 +28,7 @@ export default function ConfessionHighlights() {
           {confessions.map((confession) => (
             <Link
               key={confession.id}
-              href="/confessions"
+              href={`/confessions/${confession.slug}`}
               className="group block p-6 rounded-xl bg-surface border border-border hover:border-accent/50 transition-all"
             >
               <span className="inline-block px-2 py-0.5 rounded-full bg-accent/10 text-accent text-xs font-medium mb-3">
