@@ -12,10 +12,12 @@ import {
   MessageSquare,
   Crown,
   Search,
+  Sparkles,
 } from "lucide-react";
 
 const navLinks = [
   { href: "/episodes", label: "Episodes", icon: Headphones },
+  { href: "/story-mode", label: "Story Mode", icon: Sparkles },
   { href: "/articles", label: "Articles", icon: BookOpen },
   { href: "/quizzes", label: "Quizzes", icon: HelpCircle },
   { href: "/confessions", label: "Confessions", icon: MessageSquare },
