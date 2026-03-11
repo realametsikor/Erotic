@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   HelpCircle,
@@ -8,36 +9,27 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  Share2,
-  Twitter,
-  Facebook,
-  Link2,
-  RotateCcw,
-  Sparkles,
 } from "lucide-react";
-import type { Quiz, QuizResult } from "@/data/content";
-import { getRelatedQuizzes } from "@/data/content";
+import type { Quiz } from "@/data/content";
 
 interface Props {
   quiz: Quiz;
 }
 
-type QuizState = "intro" | "questions" | "results";
+type QuizState = "intro" | "questions";
 
 export default function QuizClient({ quiz }: Props) {
+  const router = useRouter();
   const [state, setState] = useState<QuizState>("intro");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [showShareMenu, setShowShareMenu] = useState(false);
 
-  const relatedQuizzes = useMemo(() => getRelatedQuizzes(quiz.slug), [quiz.slug]);
+  const progress = ((currentQuestion + 1) / quiz.questions.length) * 100;
 
-  const result = useMemo((): QuizResult | null => {
-    if (state !== "results") return null;
-
+  const computeResult = (allAnswers: Record<string, string>): string => {
     const valueCounts: Record<string, number> = {};
-    Object.values(answers).forEach((value) => {
+    Object.values(allAnswers).forEach((value) => {
       valueCounts[value] = (valueCounts[value] || 0) + 1;
     });
 
@@ -50,38 +42,28 @@ export default function QuizClient({ quiz }: Props) {
       }
     });
 
-    return quiz.results.find((r) => r.id === maxValue) || quiz.results[0];
-  }, [state, answers, quiz.results]);
-
-  const progress = ((currentQuestion + 1) / quiz.questions.length) * 100;
+    const result = quiz.results.find((r) => r.id === maxValue) || quiz.results[0];
+    return result.id;
+  };
 
   const handleSelectOption = (optionId: string, value: string) => {
     setSelectedOption(optionId);
 
     setTimeout(() => {
-      setAnswers((prev) => ({
-        ...prev,
+      const newAnswers = {
+        ...answers,
         [quiz.questions[currentQuestion].id]: value,
-      }));
+      };
+      setAnswers(newAnswers);
 
       if (currentQuestion < quiz.questions.length - 1) {
         setCurrentQuestion((prev) => prev + 1);
         setSelectedOption(null);
       } else {
-        setState("results");
+        const resultId = computeResult(newAnswers);
+        router.push(`/quizzes/${quiz.slug}/results?r=${resultId}`);
       }
     }, 400);
-  };
-
-  const handleRestart = () => {
-    setState("intro");
-    setCurrentQuestion(0);
-    setAnswers({});
-    setSelectedOption(null);
-  };
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
   };
 
   // Intro screen
@@ -233,157 +215,6 @@ export default function QuizClient({ quiz }: Props) {
               {currentQuestion > 0 ? "Previous" : "Back"}
             </button>
             <span className="text-xs text-muted">{quiz.title}</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Results screen
-  if (state === "results" && result) {
-    return (
-      <div className="min-h-screen">
-        <section className="bg-gradient-to-b from-accent/15 via-primary/10 to-background py-12">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-sm text-muted mb-8">
-              <Link
-                href="/"
-                className="hover:text-foreground transition-colors"
-              >
-                Home
-              </Link>
-              <span>/</span>
-              <Link
-                href="/quizzes"
-                className="hover:text-foreground transition-colors"
-              >
-                Quizzes
-              </Link>
-              <span>/</span>
-              <span className="text-foreground truncate">{quiz.title}</span>
-            </nav>
-
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/20 text-accent text-sm font-medium mb-6">
-                <Sparkles className="w-4 h-4" />
-                Your Result
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl font-bold mb-3 bg-gradient-to-r from-accent to-primary-light bg-clip-text text-transparent">
-                {result.title}
-              </h1>
-
-              <p className="text-muted text-lg max-w-xl mx-auto mb-8 leading-relaxed">
-                {result.description}
-              </p>
-
-              {/* Traits */}
-              <div className="flex flex-wrap justify-center gap-2 mb-8">
-                {result.traits.map((trait) => (
-                  <span
-                    key={trait}
-                    className="px-3 py-1.5 rounded-full bg-surface border border-border text-sm text-foreground"
-                  >
-                    {trait}
-                  </span>
-                ))}
-              </div>
-
-              {/* Actions */}
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <div className="relative">
-                  <button
-                    onClick={() => setShowShareMenu(!showShareMenu)}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-accent to-primary text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Share Result
-                  </button>
-                  {showShareMenu && (
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 p-3 rounded-xl bg-surface border border-border space-y-2 z-10 w-48">
-                      <button
-                        onClick={() => {
-                          window.open(
-                            `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                              `I got "${result.title}" on the ${quiz.title} quiz! Try it yourself:`
-                            )}&url=${encodeURIComponent(window.location.href)}`,
-                            "_blank"
-                          );
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted hover:text-foreground hover:bg-surface-light transition-colors"
-                      >
-                        <Twitter className="w-4 h-4" /> Twitter
-                      </button>
-                      <button
-                        onClick={() => {
-                          window.open(
-                            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                              window.location.href
-                            )}`,
-                            "_blank"
-                          );
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted hover:text-foreground hover:bg-surface-light transition-colors"
-                      >
-                        <Facebook className="w-4 h-4" /> Facebook
-                      </button>
-                      <button
-                        onClick={() => {
-                          handleCopyLink();
-                          setShowShareMenu(false);
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted hover:text-foreground hover:bg-surface-light transition-colors"
-                      >
-                        <Link2 className="w-4 h-4" /> Copy Link
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  onClick={handleRestart}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-surface border border-border text-sm font-semibold hover:border-accent/50 transition-colors"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Retake Quiz
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Related Quizzes */}
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h3 className="text-lg font-semibold mb-4">Try Another Quiz</h3>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {relatedQuizzes.map((q) => (
-              <Link
-                key={q.id}
-                href={`/quizzes/${q.slug}`}
-                className="group p-4 rounded-xl bg-surface border border-border hover:border-accent/50 transition-all"
-              >
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center mb-3">
-                  <HelpCircle className="w-5 h-5 text-accent" />
-                </div>
-                <h4 className="text-sm font-semibold line-clamp-2 group-hover:text-accent transition-colors">
-                  {q.title}
-                </h4>
-                <p className="text-xs text-muted mt-1">
-                  {q.questionCount} questions
-                </p>
-              </Link>
-            ))}
-          </div>
-
-          <div className="mt-8 pt-8 border-t border-border">
-            <Link
-              href="/quizzes"
-              className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:text-primary-light transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to all quizzes
-            </Link>
           </div>
         </div>
       </div>
