@@ -68,6 +68,7 @@ export interface Article {
   thumbnail: string;
   tags: string[];
   featured?: boolean;
+  isPremium?: boolean;
 }
 
 export const articleCategories = [
@@ -907,6 +908,7 @@ Your attachment style is not your destiny — it's your starting point. With sel
     thumbnail: "/images/article-attachment.jpg",
     tags: ["attachment styles", "psychology", "emotional intelligence", "self-awareness"],
     featured: true,
+    isPremium: true,
   },
   {
     id: "6",
@@ -1093,6 +1095,7 @@ Self-love is the foundation upon which all other love is built. Start building y
     thumbnail: "/images/article-self-love.jpg",
     tags: ["self-love", "self-worth", "personal growth", "boundaries"],
     featured: true,
+    isPremium: true,
   },
   {
     id: "9",
@@ -1163,6 +1166,7 @@ Conflict doesn't have to be the enemy of love. When handled with respect, empath
     date: "2026-01-20",
     thumbnail: "/images/article-conflict.jpg",
     tags: ["conflict resolution", "communication", "couples", "marriage"],
+    isPremium: true,
   },
   {
     id: "10",
@@ -1229,6 +1233,7 @@ Intimacy is a skill that can be learned, practiced, and refined throughout your 
     date: "2026-01-15",
     thumbnail: "/images/article-intimacy.jpg",
     tags: ["intimacy", "sex education", "communication", "pleasure"],
+    isPremium: true,
   },
 ];
 
