@@ -73,6 +73,22 @@ export default function ConfessionsPage() {
     e.preventDefault();
     if (!formData.title.trim() || !formData.preview.trim()) return;
 
+    // Submit to Netlify Forms
+    const body = new URLSearchParams({
+      "form-name": "confessions",
+      title: formData.title.trim(),
+      story: formData.preview.trim(),
+      category: formData.category,
+    });
+
+    fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    }).catch(() => {
+      // Silent fail — local state still shows the confession
+    });
+
     const newConfession: Confession = {
       id: `local-${Date.now()}`,
       slug: `confession-${Date.now()}`,
@@ -167,13 +183,21 @@ export default function ConfessionsPage() {
                   Everything is anonymous. No account needed.
                 </p>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form
+                  name="confessions"
+                  method="POST"
+                  data-netlify="true"
+                  onSubmit={handleSubmit}
+                  className="space-y-4"
+                >
+                  <input type="hidden" name="form-name" value="confessions" />
                   <div>
                     <label className="block text-sm font-medium mb-1.5">
                       Title
                     </label>
                     <input
                       type="text"
+                      name="title"
                       placeholder="Give your confession a title..."
                       value={formData.title}
                       onChange={(e) =>
@@ -189,6 +213,7 @@ export default function ConfessionsPage() {
                       Your Story
                     </label>
                     <textarea
+                      name="story"
                       placeholder="Share what's on your heart..."
                       value={formData.preview}
                       onChange={(e) =>
@@ -208,6 +233,7 @@ export default function ConfessionsPage() {
                       Category
                     </label>
                     <select
+                      name="category"
                       value={formData.category}
                       onChange={(e) =>
                         setFormData({ ...formData, category: e.target.value })
