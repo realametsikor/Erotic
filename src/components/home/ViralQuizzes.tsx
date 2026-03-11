@@ -28,7 +28,7 @@ export default function ViralQuizzes() {
           {quizzes.map((quiz) => (
             <Link
               key={quiz.id}
-              href="/quizzes"
+              href={`/quizzes/${quiz.slug}`}
               className="group block rounded-xl bg-surface border border-border hover:border-accent/50 transition-all overflow-hidden"
             >
               <div className="aspect-[4/3] bg-gradient-to-br from-accent/20 to-primary/20 flex items-center justify-center">

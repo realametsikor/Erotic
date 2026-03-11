@@ -7,13 +7,36 @@ export interface Confession {
   date: string;
 }
 
-export interface Quiz {
+export interface QuizOption {
+  id: string;
+  text: string;
+  value: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: QuizOption[];
+}
+
+export interface QuizResult {
   id: string;
   title: string;
   description: string;
+  traits: string[];
+}
+
+export interface Quiz {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
   questionCount: number;
   takenCount: number;
   thumbnail: string;
+  questions: QuizQuestion[];
+  results: QuizResult[];
 }
 
 export interface Article {
@@ -44,6 +67,16 @@ export const articleCategories = [
   "Self-Love",
 ];
 
+export const confessionCategories = [
+  "All",
+  "Breakup Stories",
+  "Secrets",
+  "Secret Crushes",
+  "Long Distance",
+  "Marriage",
+  "Dating Fails",
+];
+
 export const confessions: Confession[] = [
   {
     id: "1",
@@ -72,44 +105,472 @@ export const confessions: Confession[] = [
     commentCount: 63,
     date: "2026-02-28",
   },
+  {
+    id: "4",
+    title: "We've been long distance for 3 years",
+    preview:
+      "Everyone says it won't work. My family thinks I'm wasting my time. But every video call reminds me why I keep holding on...",
+    category: "Long Distance",
+    commentCount: 91,
+    date: "2026-02-25",
+  },
+  {
+    id: "5",
+    title: "I said 'I love you' and they didn't say it back",
+    preview:
+      "Three months in, I couldn't hold it in anymore. I told them how I felt. The silence that followed was the longest of my life...",
+    category: "Dating Fails",
+    commentCount: 55,
+    date: "2026-02-20",
+  },
+  {
+    id: "6",
+    title: "I'm happily married but sometimes feel lonely",
+    preview:
+      "From the outside we look perfect. Two kids, nice house, good jobs. But some nights I lie awake feeling like we're roommates...",
+    category: "Marriage",
+    commentCount: 112,
+    date: "2026-02-18",
+  },
+  {
+    id: "7",
+    title: "I sabotage every good relationship I'm in",
+    preview:
+      "The moment things start going well, I find a reason to push them away. I know it's a pattern. I just don't know how to stop...",
+    category: "Secrets",
+    commentCount: 74,
+    date: "2026-02-15",
+  },
+  {
+    id: "8",
+    title: "My crush liked my story and I panicked",
+    preview:
+      "They viewed my story within 30 seconds. Then they liked it. I've been drafting a DM for two hours. Send help...",
+    category: "Secret Crushes",
+    commentCount: 38,
+    date: "2026-02-12",
+  },
+  {
+    id: "9",
+    title: "I went on a date with my ex's friend",
+    preview:
+      "It wasn't planned. We bumped into each other at a coffee shop and ended up talking for three hours. Now I don't know what to do...",
+    category: "Dating Fails",
+    commentCount: 66,
+    date: "2026-02-08",
+  },
+];
+
+export const quizCategories = [
+  "All",
+  "Love & Attachment",
+  "Personality",
+  "Relationship Health",
+  "Compatibility",
 ];
 
 export const quizzes: Quiz[] = [
   {
     id: "1",
+    slug: "love-language",
     title: "What Is Your Love Language?",
     description:
       "Discover how you give and receive love with this comprehensive love language assessment.",
-    questionCount: 15,
+    category: "Love & Attachment",
+    questionCount: 6,
     takenCount: 24500,
     thumbnail: "/images/quiz-love-language.jpg",
+    questions: [
+      {
+        id: "q1",
+        question: "After a long day, what would make you feel most loved?",
+        options: [
+          { id: "a", text: "Hearing \"I'm so proud of you\"", value: "words" },
+          { id: "b", text: "Cuddling on the couch together", value: "touch" },
+          { id: "c", text: "Your partner cooking dinner for you", value: "service" },
+          { id: "d", text: "Receiving a thoughtful little gift", value: "gifts" },
+        ],
+      },
+      {
+        id: "q2",
+        question: "Which gesture means the most to you in a relationship?",
+        options: [
+          { id: "a", text: "A heartfelt love letter or message", value: "words" },
+          { id: "b", text: "An unplanned weekend getaway together", value: "quality" },
+          { id: "c", text: "A surprise care package just because", value: "gifts" },
+          { id: "d", text: "A long hug after time apart", value: "touch" },
+        ],
+      },
+      {
+        id: "q3",
+        question: "What bothers you the most in a relationship?",
+        options: [
+          { id: "a", text: "Not hearing \"I love you\" enough", value: "words" },
+          { id: "b", text: "Not spending enough quality time together", value: "quality" },
+          { id: "c", text: "Your partner forgetting special occasions", value: "gifts" },
+          { id: "d", text: "Your partner not helping around the house", value: "service" },
+        ],
+      },
+      {
+        id: "q4",
+        question: "What's your ideal date night?",
+        options: [
+          { id: "a", text: "A deep, meaningful conversation over dinner", value: "quality" },
+          { id: "b", text: "A surprise evening planned entirely by your partner", value: "service" },
+          { id: "c", text: "Exchanging meaningful, personal gifts", value: "gifts" },
+          { id: "d", text: "Slow dancing together at home", value: "touch" },
+        ],
+      },
+      {
+        id: "q5",
+        question: "How do you typically show love to your partner?",
+        options: [
+          { id: "a", text: "Compliments and words of encouragement", value: "words" },
+          { id: "b", text: "Giving them my undivided attention", value: "quality" },
+          { id: "c", text: "Doing chores or tasks to help them out", value: "service" },
+          { id: "d", text: "Hugs, hand-holding, and physical closeness", value: "touch" },
+        ],
+      },
+      {
+        id: "q6",
+        question: "What makes you feel most secure in a relationship?",
+        options: [
+          { id: "a", text: "Regular verbal affirmation and reassurance", value: "words" },
+          { id: "b", text: "Consistent, dedicated quality time", value: "quality" },
+          { id: "c", text: "Physical closeness and affection", value: "touch" },
+          { id: "d", text: "Seeing your partner go out of their way for you", value: "service" },
+        ],
+      },
+    ],
+    results: [
+      {
+        id: "words",
+        title: "Words of Affirmation",
+        description: "You feel most loved through verbal expressions of care. Compliments, \"I love you\"s, words of encouragement, and heartfelt messages fill your emotional tank. You treasure when your partner articulates how they feel about you.",
+        traits: ["Great communicator", "Values verbal appreciation", "Expressive with feelings", "Sensitive to criticism"],
+      },
+      {
+        id: "quality",
+        title: "Quality Time",
+        description: "Nothing says \"I love you\" like undivided attention. You thrive when your partner is fully present — phones down, eyes locked, sharing meaningful experiences together. Deep conversations and shared activities are your love fuel.",
+        traits: ["Values presence over presents", "Deeply attentive", "Enjoys shared activities", "Feels loved through togetherness"],
+      },
+      {
+        id: "gifts",
+        title: "Receiving Gifts",
+        description: "It's not about materialism — it's about the thought behind the gift. You feel deeply loved when someone takes the time to choose something meaningful for you. A well-chosen gift tells you that your partner truly knows and thinks about you.",
+        traits: ["Appreciates thoughtfulness", "Symbolic thinker", "Remembers special occasions", "Values effort and intention"],
+      },
+      {
+        id: "service",
+        title: "Acts of Service",
+        description: "Actions speak louder than words for you. When your partner helps with tasks, takes care of responsibilities, or goes out of their way to make your life easier, you feel profoundly loved. You believe love is shown through doing.",
+        traits: ["Action-oriented", "Appreciates reliability", "Values partnership", "Shows love through helping"],
+      },
+      {
+        id: "touch",
+        title: "Physical Touch",
+        description: "Physical connection is your primary love language. Hugs, hand-holding, cuddles, and closeness make you feel safe and loved. You communicate love through touch and feel most connected when you're physically close to your partner.",
+        traits: ["Physically affectionate", "Values closeness", "Comforted by touch", "Expressive through affection"],
+      },
+    ],
   },
   {
     id: "2",
+    slug: "partner-type",
     title: "What Type of Partner Are You?",
     description:
       "Find out your relationship personality type and what it means for your love life.",
-    questionCount: 12,
+    category: "Personality",
+    questionCount: 6,
     takenCount: 18200,
     thumbnail: "/images/quiz-partner-type.jpg",
+    questions: [
+      {
+        id: "q1",
+        question: "Your partner is going through a tough time. What do you do first?",
+        options: [
+          { id: "a", text: "Listen to them and offer emotional support", value: "nurturer" },
+          { id: "b", text: "Plan something fun to take their mind off it", value: "adventurer" },
+          { id: "c", text: "Sit down and talk through the problem together", value: "communicator" },
+          { id: "d", text: "Take charge of practical matters to ease their stress", value: "protector" },
+        ],
+      },
+      {
+        id: "q2",
+        question: "What's your biggest strength in a relationship?",
+        options: [
+          { id: "a", text: "My empathy and emotional awareness", value: "nurturer" },
+          { id: "b", text: "My ability to keep things exciting and fresh", value: "adventurer" },
+          { id: "c", text: "My openness and honest communication", value: "communicator" },
+          { id: "d", text: "My reliability and willingness to step up", value: "protector" },
+        ],
+      },
+      {
+        id: "q3",
+        question: "How do you handle conflict with your partner?",
+        options: [
+          { id: "a", text: "I try to understand their feelings first", value: "nurturer" },
+          { id: "b", text: "I suggest we cool off and revisit it later", value: "adventurer" },
+          { id: "c", text: "I want to talk it out right away", value: "communicator" },
+          { id: "d", text: "I focus on finding a practical solution", value: "protector" },
+        ],
+      },
+      {
+        id: "q4",
+        question: "What does your ideal weekend together look like?",
+        options: [
+          { id: "a", text: "A cozy day in, cooking and watching movies", value: "nurturer" },
+          { id: "b", text: "An unplanned road trip or outdoor adventure", value: "adventurer" },
+          { id: "c", text: "A long brunch with deep conversation", value: "communicator" },
+          { id: "d", text: "Tackling a home project or planning the future", value: "protector" },
+        ],
+      },
+      {
+        id: "q5",
+        question: "What do friends typically come to you for?",
+        options: [
+          { id: "a", text: "A shoulder to cry on and emotional support", value: "nurturer" },
+          { id: "b", text: "Fun plans and spontaneous adventures", value: "adventurer" },
+          { id: "c", text: "Honest advice and a different perspective", value: "communicator" },
+          { id: "d", text: "Help solving a problem or fixing something", value: "protector" },
+        ],
+      },
+      {
+        id: "q6",
+        question: "What's most important to you in a relationship?",
+        options: [
+          { id: "a", text: "Emotional depth and vulnerability", value: "nurturer" },
+          { id: "b", text: "Shared excitement and new experiences", value: "adventurer" },
+          { id: "c", text: "Trust and transparent communication", value: "communicator" },
+          { id: "d", text: "Stability and mutual support", value: "protector" },
+        ],
+      },
+    ],
+    results: [
+      {
+        id: "nurturer",
+        title: "The Nurturer",
+        description: "You lead with empathy and emotional intelligence. You create a safe, warm space for your partner and instinctively know how to comfort others. Your relationships are built on deep emotional connection and mutual care.",
+        traits: ["Deeply empathetic", "Emotionally intuitive", "Supportive and caring", "Creates emotional safety"],
+      },
+      {
+        id: "adventurer",
+        title: "The Adventurer",
+        description: "You bring excitement and spontaneity to your relationships. You believe love should be an adventure, and you're always finding ways to keep the spark alive. Your enthusiasm is contagious and your partner never gets bored.",
+        traits: ["Spontaneous and fun", "Keeps things exciting", "Open to new experiences", "Optimistic outlook"],
+      },
+      {
+        id: "communicator",
+        title: "The Communicator",
+        description: "You believe that honest, open dialogue is the foundation of every great relationship. You're the partner who checks in, talks things through, and creates space for real conversations. Your relationships thrive on transparency.",
+        traits: ["Open and honest", "Great listener", "Values transparency", "Resolves conflicts through dialogue"],
+      },
+      {
+        id: "protector",
+        title: "The Protector",
+        description: "You show love through action and reliability. When things get tough, you step up. Your partner can always count on you to handle challenges and provide stability. You build relationships on trust and dependability.",
+        traits: ["Reliable and steady", "Action-oriented", "Problem solver", "Creates stability"],
+      },
+    ],
   },
   {
     id: "3",
+    slug: "relationship-health",
     title: "How Healthy Is Your Relationship?",
     description:
       "Take a deep look at your relationship dynamics and get personalized insights.",
-    questionCount: 20,
+    category: "Relationship Health",
+    questionCount: 6,
     takenCount: 31000,
     thumbnail: "/images/quiz-healthy.jpg",
+    questions: [
+      {
+        id: "q1",
+        question: "How often do you and your partner have meaningful conversations?",
+        options: [
+          { id: "a", text: "Daily — we talk about everything", value: "thriving" },
+          { id: "b", text: "A few times a week", value: "growing" },
+          { id: "c", text: "Occasionally, when something comes up", value: "attention" },
+          { id: "d", text: "Rarely — we mostly talk about logistics", value: "reflect" },
+        ],
+      },
+      {
+        id: "q2",
+        question: "When you disagree, how do you typically resolve conflict?",
+        options: [
+          { id: "a", text: "We talk it out calmly and find a compromise", value: "thriving" },
+          { id: "b", text: "It takes time, but we eventually work through it", value: "growing" },
+          { id: "c", text: "One of us usually gives in to avoid a fight", value: "attention" },
+          { id: "d", text: "We tend to avoid the issue or it escalates", value: "reflect" },
+        ],
+      },
+      {
+        id: "q3",
+        question: "Do you feel emotionally safe being vulnerable with your partner?",
+        options: [
+          { id: "a", text: "Absolutely — I can share anything", value: "thriving" },
+          { id: "b", text: "Mostly, but some topics feel risky", value: "growing" },
+          { id: "c", text: "Sometimes — it depends on their mood", value: "attention" },
+          { id: "d", text: "Not really — I hold back a lot", value: "reflect" },
+        ],
+      },
+      {
+        id: "q4",
+        question: "How well does your partner respect your boundaries?",
+        options: [
+          { id: "a", text: "They always respect and support my boundaries", value: "thriving" },
+          { id: "b", text: "Usually, with occasional misunderstandings", value: "growing" },
+          { id: "c", text: "Sometimes they push back or dismiss them", value: "attention" },
+          { id: "d", text: "My boundaries are often ignored or violated", value: "reflect" },
+        ],
+      },
+      {
+        id: "q5",
+        question: "How do you feel about the balance of effort in your relationship?",
+        options: [
+          { id: "a", text: "We both contribute equally and appreciate each other", value: "thriving" },
+          { id: "b", text: "It's mostly balanced, with some imbalance at times", value: "growing" },
+          { id: "c", text: "I often feel like I'm putting in more effort", value: "attention" },
+          { id: "d", text: "The relationship feels very one-sided", value: "reflect" },
+        ],
+      },
+      {
+        id: "q6",
+        question: "When you think about your relationship's future, how do you feel?",
+        options: [
+          { id: "a", text: "Excited and optimistic — we're building something great", value: "thriving" },
+          { id: "b", text: "Hopeful, but aware there's room to grow", value: "growing" },
+          { id: "c", text: "Uncertain — I have some concerns", value: "attention" },
+          { id: "d", text: "Anxious or doubtful about where things are heading", value: "reflect" },
+        ],
+      },
+    ],
+    results: [
+      {
+        id: "thriving",
+        title: "Thriving Relationship",
+        description: "Your relationship shows all the hallmarks of a healthy, strong partnership. You and your partner have built a solid foundation of trust, communication, and mutual respect. Keep nurturing what you have — it's something special.",
+        traits: ["Strong communication", "Mutual respect", "Emotional safety", "Balanced partnership"],
+      },
+      {
+        id: "growing",
+        title: "Growing Strong",
+        description: "Your relationship has a solid foundation with room to grow. You're on the right track, and with continued effort and open communication, your bond will only deepen. Focus on the areas that need attention and celebrate your progress.",
+        traits: ["Good foundation", "Willing to improve", "Generally supportive", "Open to growth"],
+      },
+      {
+        id: "attention",
+        title: "Needs Some Attention",
+        description: "Your relationship has potential, but some areas need focus. Consider having honest conversations about your needs and boundaries. Small, consistent changes can make a big difference. You might benefit from couples counseling or reading together.",
+        traits: ["Has potential", "Needs better communication", "Boundary work needed", "Would benefit from intention"],
+      },
+      {
+        id: "reflect",
+        title: "Time to Reflect",
+        description: "Your answers suggest some significant challenges in your relationship. It's important to take an honest look at whether your needs are being met and whether both partners are committed to growth. Consider seeking professional support.",
+        traits: ["Significant challenges", "Professional support recommended", "Self-reflection needed", "Important decisions ahead"],
+      },
+    ],
   },
   {
     id: "4",
+    slug: "compatibility-check",
     title: "How Compatible Are You?",
     description:
       "Explore your compatibility with your partner across key relationship dimensions.",
-    questionCount: 18,
+    category: "Compatibility",
+    questionCount: 6,
     takenCount: 15800,
     thumbnail: "/images/quiz-compatible.jpg",
+    questions: [
+      {
+        id: "q1",
+        question: "How aligned are you and your partner on life goals?",
+        options: [
+          { id: "a", text: "We share the same vision for the future", value: "cosmic" },
+          { id: "b", text: "Our goals overlap in most key areas", value: "strong" },
+          { id: "c", text: "We agree on some things but differ on others", value: "growing" },
+          { id: "d", text: "We want very different things but make it work", value: "opposites" },
+        ],
+      },
+      {
+        id: "q2",
+        question: "How do you and your partner spend free time?",
+        options: [
+          { id: "a", text: "We love doing the same activities together", value: "cosmic" },
+          { id: "b", text: "We enjoy some shared hobbies and some solo ones", value: "strong" },
+          { id: "c", text: "We're learning to appreciate each other's interests", value: "growing" },
+          { id: "d", text: "We have totally different interests — and that's exciting", value: "opposites" },
+        ],
+      },
+      {
+        id: "q3",
+        question: "How do your communication styles compare?",
+        options: [
+          { id: "a", text: "We naturally understand each other without much effort", value: "cosmic" },
+          { id: "b", text: "We communicate well with occasional misunderstandings", value: "strong" },
+          { id: "c", text: "We sometimes struggle to get on the same page", value: "growing" },
+          { id: "d", text: "We communicate very differently but are learning to bridge the gap", value: "opposites" },
+        ],
+      },
+      {
+        id: "q4",
+        question: "How do your social needs compare?",
+        options: [
+          { id: "a", text: "We're both the same — equally social or equally homebody", value: "cosmic" },
+          { id: "b", text: "Pretty similar, with minor differences", value: "strong" },
+          { id: "c", text: "One of us is more social, but we manage it well", value: "growing" },
+          { id: "d", text: "We're complete opposites — introvert and extrovert", value: "opposites" },
+        ],
+      },
+      {
+        id: "q5",
+        question: "How do you handle financial matters together?",
+        options: [
+          { id: "a", text: "We're completely aligned on money and spending", value: "cosmic" },
+          { id: "b", text: "We mostly agree with occasional compromises needed", value: "strong" },
+          { id: "c", text: "Money is sometimes a source of tension", value: "growing" },
+          { id: "d", text: "We have very different approaches but respect each other's style", value: "opposites" },
+        ],
+      },
+      {
+        id: "q6",
+        question: "How do your core values compare?",
+        options: [
+          { id: "a", text: "Our values are almost identical", value: "cosmic" },
+          { id: "b", text: "We share the most important values", value: "strong" },
+          { id: "c", text: "We agree on some values but differ on others", value: "growing" },
+          { id: "d", text: "We have different values but deeply respect each other's perspective", value: "opposites" },
+        ],
+      },
+    ],
+    results: [
+      {
+        id: "cosmic",
+        title: "Cosmic Connection",
+        description: "You and your partner are remarkably aligned across all key dimensions. Your natural compatibility creates an effortless flow in your relationship. You share values, goals, and communication styles that make your bond feel almost destined.",
+        traits: ["Deeply aligned values", "Natural understanding", "Shared vision", "Effortless connection"],
+      },
+      {
+        id: "strong",
+        title: "Strong Match",
+        description: "You and your partner have a strong foundation of compatibility with healthy room for individuality. Your alignment on the big things gives you a solid base, while your differences keep things interesting and promote growth.",
+        traits: ["Solid foundation", "Healthy individuality", "Good communication", "Balanced partnership"],
+      },
+      {
+        id: "growing",
+        title: "Growing Together",
+        description: "You and your partner are on a growth journey together. While you have some natural differences, your willingness to learn from each other is your greatest asset. Focus on communication and understanding to keep strengthening your bond.",
+        traits: ["Growth mindset", "Learning from differences", "Building understanding", "Evolving together"],
+      },
+      {
+        id: "opposites",
+        title: "Complementary Opposites",
+        description: "They say opposites attract — and that might just be your superpower. Your differences bring balance, fresh perspectives, and excitement to the relationship. The key is maintaining mutual respect and appreciation for what each of you brings.",
+        traits: ["Balanced perspectives", "Exciting dynamic", "Mutual respect", "Complementary strengths"],
+      },
+    ],
   },
 ];
 
@@ -733,6 +1194,14 @@ Intimacy is a skill that can be learned, practiced, and refined throughout your 
 
 export function getArticleBySlug(slug: string): Article | undefined {
   return articles.find((article) => article.slug === slug);
+}
+
+export function getQuizBySlug(slug: string): Quiz | undefined {
+  return quizzes.find((quiz) => quiz.slug === slug);
+}
+
+export function getRelatedQuizzes(currentSlug: string, limit = 3): Quiz[] {
+  return quizzes.filter((q) => q.slug !== currentSlug).slice(0, limit);
 }
 
 export function getRelatedArticles(
