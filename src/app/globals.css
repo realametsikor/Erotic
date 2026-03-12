@@ -15,10 +15,24 @@
   --font-mono: var(--font-geist-mono);
 }
 
+[data-theme="light"] {
+  --color-background: #f8f9fc;
+  --color-foreground: #1a1a2e;
+  --color-primary: #7c3aed;
+  --color-primary-light: #6d28d9;
+  --color-accent: #ec4899;
+  --color-accent-light: #db2777;
+  --color-surface: #eef0f6;
+  --color-surface-light: #dfe3ed;
+  --color-muted: #64748b;
+  --color-border: #d1d5e0;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Smooth scrolling */
