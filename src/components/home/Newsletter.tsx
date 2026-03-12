@@ -1,18 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, ArrowRight, Check } from "lucide-react";
+import { Mail, ArrowRight, Check, Loader2 } from "lucide-react";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (email) {
-      setSubmitted(true);
-      setEmail("");
-    }
+    if (!email) return;
+
+    setSubmitting(true);
+    setError("");
+
+    const formData = new URLSearchParams();
+    formData.append("form-name", "newsletter");
+    formData.append("email", email);
+
+    fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formData.toString(),
+    })
+      .then(() => {
+        setSubmitted(true);
+        setEmail("");
+      })
+      .catch(() => {
+        setError("Something went wrong. Please try again.");
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
   };
 
   return (
@@ -37,11 +59,16 @@ export default function Newsletter() {
             </div>
           ) : (
             <form
+              name="newsletter"
+              method="POST"
+              data-netlify="true"
               onSubmit={handleSubmit}
               className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
             >
+              <input type="hidden" name="form-name" value="newsletter" />
               <input
                 type="email"
+                name="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -50,11 +77,22 @@ export default function Newsletter() {
               />
               <button
                 type="submit"
-                className="px-6 py-3 rounded-full bg-gradient-to-r from-primary to-accent text-white text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-1"
+                disabled={submitting}
+                className="px-6 py-3 rounded-full bg-gradient-to-r from-primary to-accent text-white text-sm font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-1 disabled:opacity-60"
               >
-                Subscribe <ArrowRight className="w-4 h-4" />
+                {submitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    Subscribe <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
+          )}
+
+          {error && (
+            <p className="text-xs text-red-500 mt-2">{error}</p>
           )}
 
           <p className="text-xs text-muted mt-3">

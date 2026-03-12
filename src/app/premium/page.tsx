@@ -20,6 +20,8 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  X,
+  Loader2,
 } from "lucide-react";
 import { articles } from "@/data/content";
 import PremiumLock from "@/components/PremiumLock";
@@ -184,8 +186,44 @@ export default function PremiumPage() {
     "monthly"
   );
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const premiumArticles = articles.filter((a) => a.isPremium);
+
+  const handleSubscribe = (tierName: string) => {
+    setSelectedTier(tierName);
+    setFormSubmitted(false);
+    setFormError("");
+  };
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setFormError("");
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const params = new URLSearchParams();
+    formData.forEach((value, key) => params.append(key, value.toString()));
+
+    fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+    })
+      .then(() => {
+        setFormSubmitted(true);
+      })
+      .catch(() => {
+        setFormError("Something went wrong. Please try again.");
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
+  };
 
   return (
     <div className="min-h-screen">
@@ -380,6 +418,7 @@ export default function PremiumPage() {
                     ))}
                   </ul>
                   <button
+                    onClick={() => handleSubscribe(tier.name)}
                     className={`w-full text-center py-3 rounded-full text-sm font-semibold transition-all ${
                       tier.popular
                         ? "bg-gradient-to-r from-primary to-accent text-white hover:opacity-90"
@@ -628,13 +667,13 @@ export default function PremiumPage() {
                 listeners have gone Premium.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a
-                  href="#plans"
+                <button
+                  onClick={() => handleSubscribe("Premium")}
                   className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-primary to-accent text-white font-semibold hover:opacity-90 transition-opacity"
                 >
                   <Sparkles className="w-4 h-4" />
                   Start Free Trial
-                </a>
+                </button>
                 <div className="flex items-center gap-2 text-sm text-muted">
                   <ShieldCheck className="w-4 h-4" />
                   No credit card required
@@ -644,6 +683,148 @@ export default function PremiumPage() {
           </div>
         </div>
       </section>
+
+      {/* Subscription Modal */}
+      {selectedTier && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-2xl bg-background border border-border p-6 sm:p-8 shadow-xl">
+            <button
+              onClick={() => setSelectedTier(null)}
+              className="absolute top-4 right-4 p-1 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {formSubmitted ? (
+              <div className="text-center py-6">
+                <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                  <Check className="w-7 h-7 text-primary-light" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">
+                  You&apos;re on the list!
+                </h3>
+                <p className="text-sm text-muted max-w-sm mx-auto mb-6">
+                  Thanks for signing up for the {selectedTier} plan. We&apos;ll
+                  send you an email with next steps to activate your 7-day free
+                  trial.
+                </p>
+                <button
+                  onClick={() => setSelectedTier(null)}
+                  className="px-6 py-2.5 rounded-full border border-border text-sm font-medium hover:bg-surface transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <Crown className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold">
+                      Start Your Free Trial
+                    </h3>
+                    <p className="text-xs text-muted">
+                      {selectedTier} Plan &middot;{" "}
+                      {billingCycle === "monthly" ? "Monthly" : "Yearly"}{" "}
+                      billing
+                    </p>
+                  </div>
+                </div>
+
+                <form
+                  name="premium-subscription"
+                  method="POST"
+                  data-netlify="true"
+                  onSubmit={handleFormSubmit}
+                  className="space-y-4"
+                >
+                  <input
+                    type="hidden"
+                    name="form-name"
+                    value="premium-subscription"
+                  />
+                  <input type="hidden" name="plan" value={selectedTier} />
+                  <input
+                    type="hidden"
+                    name="billing"
+                    value={billingCycle}
+                  />
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">
+                      Full Name <span className="text-accent">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      placeholder="Your full name"
+                      className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border text-foreground placeholder:text-muted focus:outline-none focus:border-primary text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">
+                      Email Address <span className="text-accent">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      placeholder="you@example.com"
+                      className="w-full px-4 py-2.5 rounded-xl bg-surface border border-border text-foreground placeholder:text-muted focus:outline-none focus:border-primary text-sm"
+                    />
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-surface/80 border border-border">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted">Selected plan</span>
+                      <span className="font-semibold">{selectedTier}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm mt-1">
+                      <span className="text-muted">Billing</span>
+                      <span className="font-semibold capitalize">
+                        {billingCycle}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm mt-1">
+                      <span className="text-muted">Trial</span>
+                      <span className="font-semibold text-primary-light">
+                        7 days free
+                      </span>
+                    </div>
+                  </div>
+
+                  {formError && (
+                    <p className="text-xs text-red-500">{formError}</p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+                  >
+                    {submitting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Start 7-Day Free Trial
+                      </>
+                    )}
+                  </button>
+
+                  <p className="text-xs text-center text-muted">
+                    No credit card required. Cancel anytime during your trial.
+                  </p>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
