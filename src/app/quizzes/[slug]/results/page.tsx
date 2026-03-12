@@ -41,6 +41,9 @@ export async function generateMetadata({
         title,
         description,
       },
+      alternates: {
+        canonical: `/quizzes/${slug}`,
+      },
     };
   }
 
@@ -51,6 +54,9 @@ export async function generateMetadata({
       title: quiz.title,
       description: quiz.description,
       type: "website",
+    },
+    alternates: {
+      canonical: `/quizzes/${slug}`,
     },
   };
 }

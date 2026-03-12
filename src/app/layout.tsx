@@ -15,24 +15,44 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://capable-kheer-fd7f34.netlify.app"),
   title: {
     default: "Heartcast — Love, Relationships & Intimacy Podcast",
     template: "%s | Heartcast",
   },
   description:
     "Your go-to podcast for honest conversations about love, relationships, intimacy, dating, and emotional intelligence. Real talk, real connections.",
+  keywords: [
+    "podcast",
+    "love",
+    "relationships",
+    "intimacy",
+    "dating",
+    "emotional intelligence",
+    "relationship advice",
+    "self-love",
+    "communication",
+    "marriage",
+  ],
+  authors: [{ name: "Heartcast" }],
+  creator: "Heartcast",
+  publisher: "Heartcast",
   openGraph: {
     title: "Heartcast — Love, Relationships & Intimacy Podcast",
     description:
       "Your go-to podcast for honest conversations about love, relationships, intimacy, dating, and emotional intelligence.",
     type: "website",
     siteName: "Heartcast",
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
     title: "Heartcast — Love, Relationships & Intimacy Podcast",
     description:
       "Real talk about love, relationships, and intimacy. No judgment, just real connection.",
+  },
+  alternates: {
+    canonical: "/",
   },
 };
 

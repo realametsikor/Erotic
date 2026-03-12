@@ -19,10 +19,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: episode.title,
     description: episode.description,
+    keywords: episode.tags,
     openGraph: {
       title: episode.title,
       description: episode.description,
       type: "article",
+      publishedTime: episode.date,
+      tags: episode.tags,
+    },
+    alternates: {
+      canonical: `/episodes/${episode.slug}`,
     },
   };
 }
@@ -37,5 +43,29 @@ export default async function EpisodeDetailPage({ params }: Props) {
 
   const related = getRelatedEpisodes(slug);
 
-  return <EpisodeDetailClient episode={episode} relatedEpisodes={related} />;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "PodcastEpisode",
+    name: episode.title,
+    description: episode.description,
+    datePublished: episode.date,
+    duration: episode.duration,
+    url: `https://capable-kheer-fd7f34.netlify.app/episodes/${episode.slug}`,
+    partOfSeries: {
+      "@type": "PodcastSeries",
+      name: "Heartcast",
+      url: "https://capable-kheer-fd7f34.netlify.app",
+    },
+    keywords: episode.tags.join(", "),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <EpisodeDetailClient episode={episode} relatedEpisodes={related} />
+    </>
+  );
 }

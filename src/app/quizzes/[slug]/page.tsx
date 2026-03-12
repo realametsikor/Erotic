@@ -24,6 +24,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: quiz.description,
       type: "website",
     },
+    alternates: {
+      canonical: `/quizzes/${quiz.slug}`,
+    },
   };
 }
 
@@ -35,5 +38,30 @@ export default async function QuizDetailPage({ params }: Props) {
     notFound();
   }
 
-  return <QuizClient quiz={quiz} />;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Quiz",
+    name: quiz.title,
+    description: quiz.description,
+    educationalAlignment: {
+      "@type": "AlignmentObject",
+      alignmentType: "educationalSubject",
+      targetName: quiz.category,
+    },
+    provider: {
+      "@type": "Organization",
+      name: "Heartcast",
+    },
+    url: `https://capable-kheer-fd7f34.netlify.app/quizzes/${quiz.slug}`,
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <QuizClient quiz={quiz} />
+    </>
+  );
 }

@@ -19,10 +19,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: article.title,
     description: article.excerpt,
+    keywords: article.tags,
+    authors: [{ name: article.author.name }],
     openGraph: {
       title: article.title,
       description: article.excerpt,
       type: "article",
+      publishedTime: article.date,
+      authors: [article.author.name],
+      tags: article.tags,
+    },
+    alternates: {
+      canonical: `/articles/${article.slug}`,
     },
   };
 }
@@ -37,5 +45,32 @@ export default async function ArticleDetailPage({ params }: Props) {
 
   const related = getRelatedArticles(slug);
 
-  return <ArticleDetailClient article={article} relatedArticles={related} />;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.excerpt,
+    datePublished: article.date,
+    author: {
+      "@type": "Person",
+      name: article.author.name,
+      jobTitle: article.author.role,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Heartcast",
+    },
+    url: `https://capable-kheer-fd7f34.netlify.app/articles/${article.slug}`,
+    keywords: article.tags.join(", "),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ArticleDetailClient article={article} relatedArticles={related} />
+    </>
+  );
 }
