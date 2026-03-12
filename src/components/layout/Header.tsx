@@ -13,7 +13,10 @@ import {
   Crown,
   Search,
   Sparkles,
+  Sun,
+  Moon,
 } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
 
 const navLinks = [
   { href: "/episodes", label: "Episodes", icon: Headphones },
@@ -27,6 +30,7 @@ const navLinks = [
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
@@ -57,6 +61,13 @@ export default function Header() {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
+            <button
+              aria-label="Toggle theme"
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors"
+            >
+              {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
             <button
               aria-label="Search"
               className="p-2 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors"
