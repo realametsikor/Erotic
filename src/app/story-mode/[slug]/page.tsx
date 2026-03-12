@@ -14,6 +14,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${story.title} — Story Mode`,
     description: story.description,
+    openGraph: {
+      title: `${story.title} — Story Mode`,
+      description: story.description,
+      type: "website",
+    },
+    alternates: {
+      canonical: `/story-mode/${story.slug}`,
+    },
   };
 }
 
@@ -29,5 +37,26 @@ export default async function StoryPlayerPage({ params }: Props) {
   const storyEpisodes = getStoryEpisodes(story);
   if (storyEpisodes.length === 0) notFound();
 
-  return <StoryPlayerClient story={story} episodes={storyEpisodes} />;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWorkSeries",
+    name: story.title,
+    description: story.description,
+    url: `https://capable-kheer-fd7f34.netlify.app/story-mode/${story.slug}`,
+    provider: {
+      "@type": "Organization",
+      name: "Heartcast",
+    },
+    numberOfEpisodes: storyEpisodes.length,
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <StoryPlayerClient story={story} episodes={storyEpisodes} />
+    </>
+  );
 }

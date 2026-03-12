@@ -23,6 +23,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: confession.title,
       description: confession.preview,
       type: "article",
+      publishedTime: confession.date,
+    },
+    alternates: {
+      canonical: `/confessions/${confession.slug}`,
     },
   };
 }
@@ -37,5 +41,27 @@ export default async function ConfessionDetailPage({ params }: Props) {
 
   const related = getRelatedConfessions(slug);
 
-  return <ConfessionDetailClient confession={confession} relatedConfessions={related} />;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: confession.title,
+    description: confession.preview,
+    datePublished: confession.date,
+    publisher: {
+      "@type": "Organization",
+      name: "Heartcast",
+    },
+    url: `https://capable-kheer-fd7f34.netlify.app/confessions/${confession.slug}`,
+    genre: "confession",
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ConfessionDetailClient confession={confession} relatedConfessions={related} />
+    </>
+  );
 }
