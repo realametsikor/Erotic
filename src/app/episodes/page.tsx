@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -11,7 +11,7 @@ import {
   Grid3X3,
   List,
 } from "lucide-react";
-import { episodes, categories } from "@/data/episodes";
+import { episodes as staticEpisodes, categories } from "@/data/episodes";
 import type { Episode } from "@/data/episodes";
 
 type SortOption = "date" | "popularity" | "title";
@@ -21,6 +21,16 @@ export default function EpisodesPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState<SortOption>("date");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [episodes, setEpisodes] = useState<Episode[]>(staticEpisodes);
+
+  useEffect(() => {
+    fetch("/api/episodes")
+      .then((r) => r.json())
+      .then((cms: Episode[]) => {
+        if (cms.length > 0) setEpisodes([...staticEpisodes, ...cms]);
+      })
+      .catch(() => {});
+  }, []);
 
   const filtered = useMemo(() => {
     let result = [...episodes];
@@ -54,7 +64,7 @@ export default function EpisodesPage() {
     }
 
     return result;
-  }, [search, selectedCategory, sortBy]);
+  }, [episodes, search, selectedCategory, sortBy]);
 
   return (
     <div className="min-h-screen">

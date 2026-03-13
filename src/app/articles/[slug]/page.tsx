@@ -1,7 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { articles, getArticleBySlug, getRelatedArticles } from "@/data/content";
+import { articles, getRelatedArticles } from "@/data/content";
+import { getArticleBySlugMerged } from "@/lib/data";
 import ArticleDetailClient from "./ArticleDetailClient";
+
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -13,7 +16,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlugMerged(slug);
   if (!article) return {};
 
   return {
@@ -37,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ArticleDetailPage({ params }: Props) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlugMerged(slug);
 
   if (!article) {
     notFound();

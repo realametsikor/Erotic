@@ -1,7 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { episodes, getEpisodeBySlug, getRelatedEpisodes } from "@/data/episodes";
+import { episodes, getRelatedEpisodes } from "@/data/episodes";
+import { getEpisodeBySlugMerged } from "@/lib/data";
 import EpisodeDetailClient from "./EpisodeDetailClient";
+
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -13,7 +16,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const episode = getEpisodeBySlug(slug);
+  const episode = await getEpisodeBySlugMerged(slug);
   if (!episode) return {};
 
   return {
@@ -35,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EpisodeDetailPage({ params }: Props) {
   const { slug } = await params;
-  const episode = getEpisodeBySlug(slug);
+  const episode = await getEpisodeBySlugMerged(slug);
 
   if (!episode) {
     notFound();
