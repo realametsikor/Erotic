@@ -2,11 +2,12 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import AdminLogin from "@/components/AdminLogin";
+import PasswordReset from "@/components/PasswordReset";
 import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 
 export default function AdminAuthGate({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, recoveryMode } = useAuth();
 
   if (loading) {
     return (
@@ -14,6 +15,10 @@ export default function AdminAuthGate({ children }: { children: ReactNode }) {
         <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)]" />
       </div>
     );
+  }
+
+  if (recoveryMode && user) {
+    return <PasswordReset />;
   }
 
   if (!user) {
