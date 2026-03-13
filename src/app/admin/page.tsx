@@ -12,7 +12,9 @@ import {
   ChevronUp,
   RefreshCw,
   LayoutDashboard,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
 
 interface Episode {
   id: string;
@@ -72,6 +74,7 @@ const articleCategories = [
 type Tab = "episodes" | "articles";
 
 export default function AdminPage() {
+  const { user, logout } = useAuth();
   const [tab, setTab] = useState<Tab>("episodes");
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
@@ -157,6 +160,20 @@ export default function AdminPage() {
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </button>
+          <div className="flex items-center gap-3">
+            {user && (
+              <span className="text-xs text-[var(--muted)] hidden sm:inline">
+                {user.email}
+              </span>
+            )}
+            <button
+              onClick={logout}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-red-500 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
