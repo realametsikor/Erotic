@@ -13,6 +13,7 @@ import {
   RefreshCw,
   LayoutDashboard,
   LogOut,
+  Settings,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -71,7 +72,26 @@ const articleCategories = [
   "Self-Love",
 ];
 
-type Tab = "episodes" | "articles";
+interface SiteSettings {
+  siteName: string;
+  siteDescription: string;
+  contactEmail: string;
+  socialLinks: {
+    instagram: string;
+    twitter: string;
+    youtube: string;
+    tiktok: string;
+  };
+  podcastLinks: {
+    spotify: string;
+    applePodcasts: string;
+    googlePodcasts: string;
+  };
+  footerText: string;
+  enablePremium: boolean;
+}
+
+type Tab = "episodes" | "articles" | "settings";
 
 export default function AdminPage() {
   const { user, logout } = useAuth();
@@ -82,6 +102,7 @@ export default function AdminPage() {
   const [showEpisodeForm, setShowEpisodeForm] = useState(false);
   const [showArticleForm, setShowArticleForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -90,12 +111,14 @@ export default function AdminPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [epRes, arRes] = await Promise.all([
+      const [epRes, arRes, setRes] = await Promise.all([
         fetch("/api/episodes"),
         fetch("/api/articles"),
+        fetch("/api/settings"),
       ]);
       if (epRes.ok) setEpisodes(await epRes.json());
       if (arRes.ok) setArticles(await arRes.json());
+      if (setRes.ok) setSettings(await setRes.json());
     } catch {
       setMessage({ type: "error", text: "Failed to load data" });
     }
@@ -223,6 +246,17 @@ export default function AdminPage() {
           >
             <BookOpen className="w-4 h-4" />
             Articles ({articles.length})
+          </button>
+          <button
+            onClick={() => setTab("settings")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === "settings"
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            <Settings className="w-4 h-4" />
+            Settings
           </button>
         </div>
 
@@ -428,6 +462,34 @@ export default function AdminPage() {
               </div>
             )}
           </div>
+        )}
+
+        {/* Settings tab */}
+        {tab === "settings" && (
+          <SettingsForm
+            settings={settings}
+            saving={saving}
+            onSave={async (data) => {
+              setSaving(true);
+              try {
+                const res = await fetch("/api/settings", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(data),
+                });
+                if (res.ok) {
+                  const updated = await res.json();
+                  setSettings(updated);
+                  showMsg("success", "Settings saved!");
+                } else {
+                  showMsg("error", "Failed to save settings");
+                }
+              } catch {
+                showMsg("error", "Failed to save settings");
+              }
+              setSaving(false);
+            }}
+          />
         )}
       </div>
     </div>
@@ -821,6 +883,211 @@ function ArticleForm({
       >
         <Save className="w-4 h-4" />
         {saving ? "Saving..." : "Save Article"}
+      </button>
+    </form>
+  );
+}
+
+/* ── Settings Form ────────────────────────────────────────────── */
+
+function SettingsForm({
+  settings,
+  saving,
+  onSave,
+}: {
+  settings: SiteSettings | null;
+  saving: boolean;
+  onSave: (data: SiteSettings) => void;
+}) {
+  const [siteName, setSiteName] = useState(settings?.siteName ?? "Heartcast");
+  const [siteDescription, setSiteDescription] = useState(
+    settings?.siteDescription ?? "Love, Relationships & Intimacy Podcast"
+  );
+  const [contactEmail, setContactEmail] = useState(settings?.contactEmail ?? "");
+  const [instagram, setInstagram] = useState(settings?.socialLinks?.instagram ?? "");
+  const [twitter, setTwitter] = useState(settings?.socialLinks?.twitter ?? "");
+  const [youtube, setYoutube] = useState(settings?.socialLinks?.youtube ?? "");
+  const [tiktok, setTiktok] = useState(settings?.socialLinks?.tiktok ?? "");
+  const [spotify, setSpotify] = useState(settings?.podcastLinks?.spotify ?? "");
+  const [applePodcasts, setApplePodcasts] = useState(settings?.podcastLinks?.applePodcasts ?? "");
+  const [googlePodcasts, setGooglePodcasts] = useState(settings?.podcastLinks?.googlePodcasts ?? "");
+  const [footerText, setFooterText] = useState(settings?.footerText ?? "");
+  const [enablePremium, setEnablePremium] = useState(settings?.enablePremium ?? true);
+
+  useEffect(() => {
+    if (settings) {
+      setSiteName(settings.siteName);
+      setSiteDescription(settings.siteDescription);
+      setContactEmail(settings.contactEmail);
+      setInstagram(settings.socialLinks.instagram);
+      setTwitter(settings.socialLinks.twitter);
+      setYoutube(settings.socialLinks.youtube);
+      setTiktok(settings.socialLinks.tiktok);
+      setSpotify(settings.podcastLinks.spotify);
+      setApplePodcasts(settings.podcastLinks.applePodcasts);
+      setGooglePodcasts(settings.podcastLinks.googlePodcasts);
+      setFooterText(settings.footerText);
+      setEnablePremium(settings.enablePremium);
+    }
+  }, [settings]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      siteName: siteName.trim(),
+      siteDescription: siteDescription.trim(),
+      contactEmail: contactEmail.trim(),
+      socialLinks: {
+        instagram: instagram.trim(),
+        twitter: twitter.trim(),
+        youtube: youtube.trim(),
+        tiktok: tiktok.trim(),
+      },
+      podcastLinks: {
+        spotify: spotify.trim(),
+        applePodcasts: applePodcasts.trim(),
+        googlePodcasts: googlePodcasts.trim(),
+      },
+      footerText: footerText.trim(),
+      enablePremium,
+    });
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6"
+    >
+      {/* General Settings */}
+      <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-4">
+        <h3 className="font-semibold text-[var(--foreground)]">General</h3>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Field label="Site Name">
+            <input
+              value={siteName}
+              onChange={(e) => setSiteName(e.target.value)}
+              placeholder="Site name"
+              className="input-field"
+            />
+          </Field>
+          <Field label="Contact Email">
+            <input
+              type="email"
+              value={contactEmail}
+              onChange={(e) => setContactEmail(e.target.value)}
+              placeholder="hello@example.com"
+              className="input-field"
+            />
+          </Field>
+        </div>
+        <Field label="Site Description">
+          <textarea
+            value={siteDescription}
+            onChange={(e) => setSiteDescription(e.target.value)}
+            rows={2}
+            placeholder="A short description of your site"
+            className="input-field"
+          />
+        </Field>
+        <Field label="Footer Text">
+          <input
+            value={footerText}
+            onChange={(e) => setFooterText(e.target.value)}
+            placeholder="e.g. © 2026 Heartcast. All rights reserved."
+            className="input-field"
+          />
+        </Field>
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="settings-premium"
+            checked={enablePremium}
+            onChange={(e) => setEnablePremium(e.target.checked)}
+            className="rounded"
+          />
+          <label htmlFor="settings-premium" className="text-sm text-[var(--foreground)]">
+            Enable premium content
+          </label>
+        </div>
+      </div>
+
+      {/* Social Links */}
+      <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-4">
+        <h3 className="font-semibold text-[var(--foreground)]">Social Links</h3>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Field label="Instagram">
+            <input
+              value={instagram}
+              onChange={(e) => setInstagram(e.target.value)}
+              placeholder="https://instagram.com/..."
+              className="input-field"
+            />
+          </Field>
+          <Field label="Twitter / X">
+            <input
+              value={twitter}
+              onChange={(e) => setTwitter(e.target.value)}
+              placeholder="https://twitter.com/..."
+              className="input-field"
+            />
+          </Field>
+          <Field label="YouTube">
+            <input
+              value={youtube}
+              onChange={(e) => setYoutube(e.target.value)}
+              placeholder="https://youtube.com/..."
+              className="input-field"
+            />
+          </Field>
+          <Field label="TikTok">
+            <input
+              value={tiktok}
+              onChange={(e) => setTiktok(e.target.value)}
+              placeholder="https://tiktok.com/..."
+              className="input-field"
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* Podcast Links */}
+      <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-4">
+        <h3 className="font-semibold text-[var(--foreground)]">Podcast Platforms</h3>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Field label="Spotify">
+            <input
+              value={spotify}
+              onChange={(e) => setSpotify(e.target.value)}
+              placeholder="https://open.spotify.com/show/..."
+              className="input-field"
+            />
+          </Field>
+          <Field label="Apple Podcasts">
+            <input
+              value={applePodcasts}
+              onChange={(e) => setApplePodcasts(e.target.value)}
+              placeholder="https://podcasts.apple.com/..."
+              className="input-field"
+            />
+          </Field>
+        </div>
+        <Field label="Google Podcasts">
+          <input
+            value={googlePodcasts}
+            onChange={(e) => setGooglePodcasts(e.target.value)}
+            placeholder="https://podcasts.google.com/..."
+            className="input-field"
+          />
+        </Field>
+      </div>
+
+      <button
+        type="submit"
+        disabled={saving}
+        className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+      >
+        <Save className="w-4 h-4" />
+        {saving ? "Saving..." : "Save Settings"}
       </button>
     </form>
   );
