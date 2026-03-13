@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -13,7 +13,7 @@ import {
   Star,
   Crown,
 } from "lucide-react";
-import { articles, articleCategories } from "@/data/content";
+import { articles as staticArticles, articleCategories } from "@/data/content";
 import type { Article } from "@/data/content";
 
 type SortOption = "date" | "readTime" | "title";
@@ -23,6 +23,16 @@ export default function ArticlesPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState<SortOption>("date");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [articles, setArticles] = useState<Article[]>(staticArticles);
+
+  useEffect(() => {
+    fetch("/api/articles")
+      .then((r) => r.json())
+      .then((cms: Article[]) => {
+        if (cms.length > 0) setArticles([...staticArticles, ...cms]);
+      })
+      .catch(() => {});
+  }, []);
 
   const filtered = useMemo(() => {
     let result = [...articles];
@@ -61,7 +71,7 @@ export default function ArticlesPage() {
     }
 
     return result;
-  }, [search, selectedCategory, sortBy]);
+  }, [articles, search, selectedCategory, sortBy]);
 
   return (
     <div className="min-h-screen">
