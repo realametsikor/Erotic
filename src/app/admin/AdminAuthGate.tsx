@@ -1,11 +1,11 @@
 "use client";
 
-import AuthProvider, { useAuth } from "@/components/AuthProvider";
+import { useAuth } from "@/components/AuthProvider";
 import AdminLogin from "@/components/AdminLogin";
 import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 
-function AuthGate({ children }: { children: ReactNode }) {
+export default function AdminAuthGate({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -21,12 +21,4 @@ function AuthGate({ children }: { children: ReactNode }) {
   }
 
   return <>{children}</>;
-}
-
-export default function AdminAuthGate({ children }: { children: ReactNode }) {
-  return (
-    <AuthProvider>
-      <AuthGate>{children}</AuthGate>
-    </AuthProvider>
-  );
 }

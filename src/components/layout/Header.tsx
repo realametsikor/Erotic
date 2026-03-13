@@ -15,8 +15,11 @@ import {
   Sparkles,
   Sun,
   Moon,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
+import { useAuth } from "@/components/AuthProvider";
 
 const navLinks = [
   { href: "/episodes", label: "Episodes", icon: Headphones },
@@ -31,6 +34,7 @@ const navLinks = [
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { user, logout, loading } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
@@ -61,6 +65,25 @@ export default function Header() {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
+            {!loading && (
+              user ? (
+                <button
+                  onClick={() => logout()}
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted hover:text-foreground hover:bg-surface transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              ) : (
+                <Link
+                  href="/admin"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted hover:text-foreground hover:bg-surface transition-colors"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Login
+                </Link>
+              )
+            )}
             <button
               aria-label="Toggle theme"
               onClick={toggleTheme}
@@ -118,6 +141,26 @@ export default function Header() {
               <Crown className="w-4 h-4" />
               Subscribe Now
             </Link>
+            {!loading && (
+              user ? (
+                <button
+                  onClick={() => { logout(); setMobileOpen(false); }}
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors w-full"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Logout
+                </button>
+              ) : (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-muted hover:text-foreground hover:bg-surface transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <LogIn className="w-5 h-5" />
+                  Login
+                </Link>
+              )
+            )}
           </nav>
         </div>
       )}
