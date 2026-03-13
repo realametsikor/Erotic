@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getUser } from "@netlify/identity";
 import { getArticlesStore } from "@/lib/blobs";
 import type { Article } from "@/data/content";
 
@@ -18,6 +19,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const user = await getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const store = getArticlesStore();
     const body = await request.json();
@@ -57,6 +63,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const user = await getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { slug } = await request.json();
     const store = getArticlesStore();
