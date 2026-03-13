@@ -111,6 +111,11 @@ export default function AdminPage() {
     setTimeout(() => setMessage(null), 3000);
   };
 
+  const handleUnauthorized = useCallback(async () => {
+    showMsg("error", "Session expired. Please log in again.");
+    await logout();
+  }, [logout]);
+
   const deleteEpisode = async (slug: string) => {
     if (!confirm("Delete this episode?")) return;
     const res = await fetch("/api/episodes", {
@@ -121,6 +126,8 @@ export default function AdminPage() {
     if (res.ok) {
       setEpisodes((prev) => prev.filter((e) => e.slug !== slug));
       showMsg("success", "Episode deleted");
+    } else if (res.status === 401) {
+      await handleUnauthorized();
     } else {
       showMsg("error", "Failed to delete episode");
     }
@@ -136,6 +143,8 @@ export default function AdminPage() {
     if (res.ok) {
       setArticles((prev) => prev.filter((a) => a.slug !== slug));
       showMsg("success", "Article deleted");
+    } else if (res.status === 401) {
+      await handleUnauthorized();
     } else {
       showMsg("error", "Failed to delete article");
     }
@@ -253,6 +262,8 @@ export default function AdminPage() {
                       setEpisodes((prev) => [...prev, ep]);
                       setShowEpisodeForm(false);
                       showMsg("success", "Episode created!");
+                    } else if (res.status === 401) {
+                      await handleUnauthorized();
                     } else {
                       showMsg("error", "Failed to create episode");
                     }
@@ -352,6 +363,8 @@ export default function AdminPage() {
                       setArticles((prev) => [...prev, article]);
                       setShowArticleForm(false);
                       showMsg("success", "Article created!");
+                    } else if (res.status === 401) {
+                      await handleUnauthorized();
                     } else {
                       showMsg("error", "Failed to create article");
                     }
