@@ -7,3 +7,7 @@ export function getEpisodesStore() {
 export function getArticlesStore() {
   return getStore({ name: "articles", consistency: "strong" });
 }
+
+export function getSettingsStore() {
+  return getStore({ name: "settings", consistency: "strong" });
+}
