@@ -13,6 +13,8 @@ import {
   logout as identityLogout,
   getUser,
   handleAuthCallback,
+  requestPasswordRecovery,
+  updateUser,
   AuthError,
 } from "@netlify/identity";
 
@@ -26,18 +28,24 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   error: string | null;
+  recoveryMode: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
+  requestRecovery: (email: string) => Promise<void>;
+  resetPassword: (newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   loading: true,
   error: null,
+  recoveryMode: false,
   login: async () => {},
   logout: async () => {},
   clearError: () => {},
+  requestRecovery: async () => {},
+  resetPassword: async () => {},
 });
 
 export function useAuth() {
@@ -48,13 +56,24 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [recoveryMode, setRecoveryMode] = useState(false);
 
   // Check for existing session on mount
   useEffect(() => {
     async function init() {
       try {
         // Handle any auth callbacks (OAuth, email confirmation, recovery)
-        await handleAuthCallback();
+        const result = await handleAuthCallback();
+        if (result?.type === "recovery" && result.user) {
+          setUser({
+            id: result.user.id,
+            email: result.user.email ?? "",
+            name: result.user.name ?? undefined,
+          });
+          setRecoveryMode(true);
+          setLoading(false);
+          return;
+        }
       } catch {
         // No callback to handle — normal page load
       }
@@ -121,9 +140,38 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearError = useCallback(() => setError(null), []);
 
+  const requestRecovery = useCallback(async (email: string) => {
+    setError(null);
+    try {
+      await requestPasswordRecovery(email);
+    } catch (err) {
+      if (err instanceof AuthError) {
+        setError(err.message);
+      } else {
+        setError("Failed to send recovery email. Please try again.");
+      }
+      throw err;
+    }
+  }, []);
+
+  const resetPassword = useCallback(async (newPassword: string) => {
+    setError(null);
+    try {
+      await updateUser({ password: newPassword });
+      setRecoveryMode(false);
+    } catch (err) {
+      if (err instanceof AuthError) {
+        setError(err.message);
+      } else {
+        setError("Failed to update password. Please try again.");
+      }
+      throw err;
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, error, login, logout, clearError }}
+      value={{ user, loading, error, recoveryMode, login, logout, clearError, requestRecovery, resetPassword }}
     >
       {children}
     </AuthContext.Provider>
