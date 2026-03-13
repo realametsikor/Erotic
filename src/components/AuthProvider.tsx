@@ -64,7 +64,10 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Handle any auth callbacks (OAuth, email confirmation, recovery)
         const result = await handleAuthCallback();
-        if (result?.type === "recovery" && result.user) {
+        if (
+          (result?.type === "recovery" || result?.type === "invite") &&
+          result.user
+        ) {
           setUser({
             id: result.user.id,
             email: result.user.email ?? "",
