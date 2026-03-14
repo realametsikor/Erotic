@@ -66,6 +66,42 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  const user = await getSessionUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const store = getEpisodesStore();
+    const body = await request.json();
+    const { slug } = body;
+
+    if (!slug) {
+      return NextResponse.json({ error: "Slug is required" }, { status: 400 });
+    }
+
+    const existing = await store.get(slug, { type: "json" });
+    if (!existing) {
+      return NextResponse.json({ error: "Episode not found" }, { status: 404 });
+    }
+
+    const episode: Episode = {
+      ...(existing as Episode),
+      ...body,
+      slug,
+    };
+
+    await store.setJSON(slug, episode);
+    return NextResponse.json(episode);
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to update episode" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   const user = await getSessionUser();
   if (!user) {

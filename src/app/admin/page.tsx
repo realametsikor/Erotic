@@ -14,6 +14,12 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
+  Edit3,
+  TrendingUp,
+  Clock,
+  Star,
+  Menu,
+  ChevronLeft,
 } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -91,22 +97,30 @@ interface SiteSettings {
   enablePremium: boolean;
 }
 
-type Tab = "episodes" | "articles" | "settings";
+type View = "dashboard" | "episodes" | "articles" | "settings";
 
 export default function AdminPage() {
   const { user, logout } = useAuth();
-  const [tab, setTab] = useState<Tab>("episodes");
+  const [view, setView] = useState<View>("dashboard");
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showEpisodeForm, setShowEpisodeForm] = useState(false);
-  const [showArticleForm, setShowArticleForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  // Episode form state
+  const [showEpisodeForm, setShowEpisodeForm] = useState(false);
+  const [editingEpisode, setEditingEpisode] = useState<Episode | null>(null);
+
+  // Article form state
+  const [showArticleForm, setShowArticleForm] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -173,357 +187,869 @@ export default function AdminPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[var(--background)]">
-      {/* Top bar */}
-      <div className="bg-[var(--surface)] border-b border-[var(--border)] sticky top-16 z-30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <LayoutDashboard className="w-5 h-5 text-[var(--primary)]" />
-            <h1 className="text-lg font-bold text-[var(--foreground)]">
-              Admin CMS
-            </h1>
-          </div>
-          <button
-            onClick={fetchData}
-            disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </button>
-          <div className="flex items-center gap-3">
-            {user && (
-              <span className="text-xs text-[var(--muted)] hidden sm:inline">
-                {user.email}
-              </span>
-            )}
-            <button
-              onClick={logout}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-red-500 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
+  const saveEpisode = async (data: Partial<Episode>, isEdit: boolean) => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/episodes", {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        const ep = await res.json();
+        if (isEdit) {
+          setEpisodes((prev) =>
+            prev.map((e) => (e.slug === ep.slug ? ep : e))
+          );
+        } else {
+          setEpisodes((prev) => [...prev, ep]);
+        }
+        setShowEpisodeForm(false);
+        setEditingEpisode(null);
+        showMsg("success", isEdit ? "Episode updated!" : "Episode created!");
+      } else if (res.status === 401) {
+        await handleUnauthorized();
+      } else {
+        showMsg("error", `Failed to ${isEdit ? "update" : "create"} episode`);
+      }
+    } catch {
+      showMsg("error", `Failed to ${isEdit ? "update" : "create"} episode`);
+    }
+    setSaving(false);
+  };
 
-      {/* Message toast */}
-      {message && (
+  const saveArticle = async (data: Partial<Article>, isEdit: boolean) => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/articles", {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        const article = await res.json();
+        if (isEdit) {
+          setArticles((prev) =>
+            prev.map((a) => (a.slug === article.slug ? article : a))
+          );
+        } else {
+          setArticles((prev) => [...prev, article]);
+        }
+        setShowArticleForm(false);
+        setEditingArticle(null);
+        showMsg("success", isEdit ? "Article updated!" : "Article created!");
+      } else if (res.status === 401) {
+        await handleUnauthorized();
+      } else {
+        showMsg("error", `Failed to ${isEdit ? "update" : "create"} article`);
+      }
+    } catch {
+      showMsg("error", `Failed to ${isEdit ? "update" : "create"} article`);
+    }
+    setSaving(false);
+  };
+
+  const startEditEpisode = (ep: Episode) => {
+    setEditingEpisode(ep);
+    setShowEpisodeForm(true);
+  };
+
+  const startEditArticle = (a: Article) => {
+    setEditingArticle(a);
+    setShowArticleForm(true);
+  };
+
+  const cancelEpisodeForm = () => {
+    setShowEpisodeForm(false);
+    setEditingEpisode(null);
+  };
+
+  const cancelArticleForm = () => {
+    setShowArticleForm(false);
+    setEditingArticle(null);
+  };
+
+  const navItems: { key: View; label: string; icon: React.ReactNode }[] = [
+    {
+      key: "dashboard",
+      label: "Dashboard",
+      icon: <LayoutDashboard className="w-5 h-5" />,
+    },
+    {
+      key: "episodes",
+      label: "Episodes",
+      icon: <Mic className="w-5 h-5" />,
+    },
+    {
+      key: "articles",
+      label: "Articles",
+      icon: <BookOpen className="w-5 h-5" />,
+    },
+    {
+      key: "settings",
+      label: "Settings",
+      icon: <Settings className="w-5 h-5" />,
+    },
+  ];
+
+  const recentEpisodes = [...episodes]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
+  const recentArticles = [...articles]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
+  const premiumEpisodes = episodes.filter((e) => e.isPremium).length;
+  const featuredArticles = articles.filter((a) => a.featured).length;
+
+  return (
+    <div className="min-h-screen bg-[var(--background)] flex">
+      {/* Mobile sidebar overlay */}
+      {mobileSidebarOpen && (
         <div
-          className={`fixed top-24 right-4 z-50 px-4 py-2 rounded-lg text-sm font-medium shadow-lg ${
-            message.type === "success"
-              ? "bg-green-600 text-white"
-              : "bg-red-600 text-white"
-          }`}
-        >
-          {message.text}
-        </div>
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
       )}
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        {/* Tab selector */}
-        <div className="flex gap-2 mb-6">
+      {/* Sidebar */}
+      <aside
+        className={`fixed top-0 left-0 z-50 h-full bg-[var(--surface)] border-r border-[var(--border)] flex flex-col transition-all duration-200 ${
+          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0 lg:static ${sidebarOpen ? "w-64" : "w-[72px]"}`}
+      >
+        {/* Sidebar header */}
+        <div className="flex items-center justify-between px-4 h-16 border-b border-[var(--border)] shrink-0">
+          {sidebarOpen && (
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center shrink-0">
+                <LayoutDashboard className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-bold text-[var(--foreground)] truncate">
+                Admin
+              </span>
+            </div>
+          )}
           <button
-            onClick={() => setTab("episodes")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === "episodes"
-                ? "bg-[var(--primary)] text-white"
-                : "bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
-            }`}
+            onClick={() => {
+              setSidebarOpen(!sidebarOpen);
+              setMobileSidebarOpen(false);
+            }}
+            className="p-1.5 rounded-lg text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-light)] transition-colors hidden lg:flex"
           >
-            <Mic className="w-4 h-4" />
-            Podcasts ({episodes.length})
+            <ChevronLeft
+              className={`w-4 h-4 transition-transform ${
+                !sidebarOpen ? "rotate-180" : ""
+              }`}
+            />
           </button>
           <button
-            onClick={() => setTab("articles")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === "articles"
-                ? "bg-[var(--primary)] text-white"
-                : "bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
-            }`}
+            onClick={() => setMobileSidebarOpen(false)}
+            className="p-1.5 rounded-lg text-[var(--muted)] hover:text-[var(--foreground)] lg:hidden"
           >
-            <BookOpen className="w-4 h-4" />
-            Articles ({articles.length})
-          </button>
-          <button
-            onClick={() => setTab("settings")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === "settings"
-                ? "bg-[var(--primary)] text-white"
-                : "bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-            Settings
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Episodes tab */}
-        {tab === "episodes" && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-[var(--foreground)]">
-                Podcast Episodes
-              </h2>
-              <button
-                onClick={() => setShowEpisodeForm(!showEpisodeForm)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
-              >
-                {showEpisodeForm ? (
-                  <X className="w-4 h-4" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
-                {showEpisodeForm ? "Cancel" : "Add Episode"}
-              </button>
+        {/* Nav items */}
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {navItems.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => {
+                setView(item.key);
+                setMobileSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                view === item.key
+                  ? "bg-[var(--primary)] text-white"
+                  : "text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-light)]"
+              }`}
+              title={item.label}
+            >
+              {item.icon}
+              {sidebarOpen && <span>{item.label}</span>}
+            </button>
+          ))}
+        </nav>
+
+        {/* Sidebar footer - user info */}
+        <div className="border-t border-[var(--border)] p-3 shrink-0">
+          {sidebarOpen && user && (
+            <div className="mb-2 px-3">
+              <p className="text-xs text-[var(--muted)] truncate">
+                {user.email}
+              </p>
             </div>
+          )}
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--muted)] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+            title="Logout"
+          >
+            <LogOut className="w-5 h-5" />
+            {sidebarOpen && <span>Logout</span>}
+          </button>
+        </div>
+      </aside>
 
-            {showEpisodeForm && (
-              <EpisodeForm
-                saving={saving}
-                onSave={async (data) => {
-                  setSaving(true);
-                  try {
-                    const res = await fetch("/api/episodes", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(data),
-                    });
-                    if (res.ok) {
-                      const ep = await res.json();
-                      setEpisodes((prev) => [...prev, ep]);
-                      setShowEpisodeForm(false);
-                      showMsg("success", "Episode created!");
-                    } else if (res.status === 401) {
-                      await handleUnauthorized();
-                    } else {
-                      showMsg("error", "Failed to create episode");
-                    }
-                  } catch {
-                    showMsg("error", "Failed to create episode");
-                  }
-                  setSaving(false);
-                }}
-              />
-            )}
-
-            {loading ? (
-              <div className="text-center py-12 text-[var(--muted)]">
-                Loading...
-              </div>
-            ) : episodes.length === 0 ? (
-              <div className="text-center py-12 text-[var(--muted)]">
-                <Mic className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No CMS episodes yet</p>
-                <p className="text-sm mt-1">
-                  Click &quot;Add Episode&quot; to create one
+      {/* Main content */}
+      <div className="flex-1 min-w-0">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 bg-[var(--surface)]/80 backdrop-blur-md border-b border-[var(--border)]">
+          <div className="flex items-center justify-between px-4 sm:px-6 h-16">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setMobileSidebarOpen(true)}
+                className="p-2 rounded-lg text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-light)] transition-colors lg:hidden"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="text-lg font-bold text-[var(--foreground)] capitalize">
+                  {view}
+                </h1>
+                <p className="text-xs text-[var(--muted)] hidden sm:block">
+                  {view === "dashboard" && "Overview of your content"}
+                  {view === "episodes" && `${episodes.length} total episodes`}
+                  {view === "articles" && `${articles.length} total articles`}
+                  {view === "settings" && "Manage site configuration"}
                 </p>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {episodes.map((ep) => (
-                  <div
-                    key={ep.slug}
-                    className="flex items-center justify-between p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
-                  >
-                    <div className="min-w-0">
-                      <h3 className="font-medium text-[var(--foreground)] truncate">
-                        {ep.title}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-[var(--muted)]">
-                        <span className="text-[var(--primary-light)]">
-                          {ep.category}
-                        </span>
-                        <span>&middot;</span>
-                        <span>{ep.duration}</span>
-                        <span>&middot;</span>
-                        <span>{ep.date}</span>
-                        {ep.isPremium && (
-                          <>
-                            <span>&middot;</span>
-                            <span className="text-amber-500">Premium</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => deleteEpisode(ep.slug)}
-                      className="p-2 text-[var(--muted)] hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            </div>
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-[var(--surface-light)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+            >
+              <RefreshCw
+                className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+              />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Toast */}
+        {message && (
+          <div
+            className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-sm font-medium shadow-lg border ${
+              message.type === "success"
+                ? "bg-green-500/10 text-green-400 border-green-500/20"
+                : "bg-red-500/10 text-red-400 border-red-500/20"
+            }`}
+          >
+            {message.text}
           </div>
         )}
 
-        {/* Articles tab */}
-        {tab === "articles" && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-[var(--foreground)]">
-                Articles
-              </h2>
-              <button
-                onClick={() => setShowArticleForm(!showArticleForm)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
-              >
-                {showArticleForm ? (
-                  <X className="w-4 h-4" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
-                {showArticleForm ? "Cancel" : "Add Article"}
-              </button>
-            </div>
+        {/* Page content */}
+        <main className="p-4 sm:p-6 max-w-6xl">
+          {view === "dashboard" && (
+            <DashboardView
+              episodes={episodes}
+              articles={articles}
+              premiumEpisodes={premiumEpisodes}
+              featuredArticles={featuredArticles}
+              recentEpisodes={recentEpisodes}
+              recentArticles={recentArticles}
+              loading={loading}
+              onNavigate={setView}
+              onEditEpisode={(ep) => {
+                setView("episodes");
+                startEditEpisode(ep);
+              }}
+              onEditArticle={(a) => {
+                setView("articles");
+                startEditArticle(a);
+              }}
+            />
+          )}
 
-            {showArticleForm && (
-              <ArticleForm
-                saving={saving}
-                onSave={async (data) => {
-                  setSaving(true);
-                  try {
-                    const res = await fetch("/api/articles", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(data),
-                    });
-                    if (res.ok) {
-                      const article = await res.json();
-                      setArticles((prev) => [...prev, article]);
-                      setShowArticleForm(false);
-                      showMsg("success", "Article created!");
-                    } else if (res.status === 401) {
-                      await handleUnauthorized();
-                    } else {
-                      showMsg("error", "Failed to create article");
-                    }
-                  } catch {
-                    showMsg("error", "Failed to create article");
-                  }
-                  setSaving(false);
-                }}
-              />
-            )}
-
-            {loading ? (
-              <div className="text-center py-12 text-[var(--muted)]">
-                Loading...
-              </div>
-            ) : articles.length === 0 ? (
-              <div className="text-center py-12 text-[var(--muted)]">
-                <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No CMS articles yet</p>
-                <p className="text-sm mt-1">
-                  Click &quot;Add Article&quot; to create one
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {articles.map((a) => (
-                  <div
-                    key={a.slug}
-                    className="flex items-center justify-between p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
-                  >
-                    <div className="min-w-0">
-                      <h3 className="font-medium text-[var(--foreground)] truncate">
-                        {a.title}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-[var(--muted)]">
-                        <span className="text-[var(--primary-light)]">
-                          {a.category}
-                        </span>
-                        <span>&middot;</span>
-                        <span>{a.readTime}</span>
-                        <span>&middot;</span>
-                        <span>{a.author.name}</span>
-                        <span>&middot;</span>
-                        <span>{a.date}</span>
-                        {a.featured && (
-                          <>
-                            <span>&middot;</span>
-                            <span className="text-amber-500">Featured</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => deleteArticle(a.slug)}
-                      className="p-2 text-[var(--muted)] hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Settings tab */}
-        {tab === "settings" && (
-          <SettingsForm
-            settings={settings}
-            saving={saving}
-            onSave={async (data) => {
-              setSaving(true);
-              try {
-                const res = await fetch("/api/settings", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(data),
-                });
-                if (res.ok) {
-                  const updated = await res.json();
-                  setSettings(updated);
-                  showMsg("success", "Settings saved!");
+          {view === "episodes" && (
+            <EpisodesView
+              episodes={episodes}
+              loading={loading}
+              saving={saving}
+              showForm={showEpisodeForm}
+              editingEpisode={editingEpisode}
+              onToggleForm={() => {
+                if (showEpisodeForm) {
+                  cancelEpisodeForm();
                 } else {
+                  setEditingEpisode(null);
+                  setShowEpisodeForm(true);
+                }
+              }}
+              onCancelForm={cancelEpisodeForm}
+              onSave={saveEpisode}
+              onEdit={startEditEpisode}
+              onDelete={deleteEpisode}
+            />
+          )}
+
+          {view === "articles" && (
+            <ArticlesView
+              articles={articles}
+              loading={loading}
+              saving={saving}
+              showForm={showArticleForm}
+              editingArticle={editingArticle}
+              onToggleForm={() => {
+                if (showArticleForm) {
+                  cancelArticleForm();
+                } else {
+                  setEditingArticle(null);
+                  setShowArticleForm(true);
+                }
+              }}
+              onCancelForm={cancelArticleForm}
+              onSave={saveArticle}
+              onEdit={startEditArticle}
+              onDelete={deleteArticle}
+            />
+          )}
+
+          {view === "settings" && (
+            <SettingsForm
+              settings={settings}
+              saving={saving}
+              onSave={async (data) => {
+                setSaving(true);
+                try {
+                  const res = await fetch("/api/settings", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                  });
+                  if (res.ok) {
+                    const updated = await res.json();
+                    setSettings(updated);
+                    showMsg("success", "Settings saved!");
+                  } else {
+                    showMsg("error", "Failed to save settings");
+                  }
+                } catch {
                   showMsg("error", "Failed to save settings");
                 }
-              } catch {
-                showMsg("error", "Failed to save settings");
-              }
-              setSaving(false);
-            }}
-          />
-        )}
+                setSaving(false);
+              }}
+            />
+          )}
+        </main>
       </div>
     </div>
   );
 }
 
-/* ── Episode Form ─────────────────────────────────────────────── */
+/* ── Dashboard View ──────────────────────────────────────────── */
+
+function DashboardView({
+  episodes,
+  articles,
+  premiumEpisodes,
+  featuredArticles,
+  recentEpisodes,
+  recentArticles,
+  loading,
+  onNavigate,
+  onEditEpisode,
+  onEditArticle,
+}: {
+  episodes: Episode[];
+  articles: Article[];
+  premiumEpisodes: number;
+  featuredArticles: number;
+  recentEpisodes: Episode[];
+  recentArticles: Article[];
+  loading: boolean;
+  onNavigate: (view: View) => void;
+  onEditEpisode: (ep: Episode) => void;
+  onEditArticle: (a: Article) => void;
+}) {
+  if (loading) {
+    return (
+      <div className="text-center py-20 text-[var(--muted)]">Loading...</div>
+    );
+  }
+
+  const stats = [
+    {
+      label: "Total Episodes",
+      value: episodes.length,
+      icon: <Mic className="w-5 h-5" />,
+      color: "text-purple-400",
+      bg: "bg-purple-500/10",
+    },
+    {
+      label: "Total Articles",
+      value: articles.length,
+      icon: <BookOpen className="w-5 h-5" />,
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+    },
+    {
+      label: "Premium Episodes",
+      value: premiumEpisodes,
+      icon: <Star className="w-5 h-5" />,
+      color: "text-amber-400",
+      bg: "bg-amber-500/10",
+    },
+    {
+      label: "Featured Articles",
+      value: featuredArticles,
+      icon: <TrendingUp className="w-5 h-5" />,
+      color: "text-green-400",
+      bg: "bg-green-500/10",
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className={`p-2 rounded-lg ${stat.bg} ${stat.color}`}
+              >
+                {stat.icon}
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-[var(--foreground)]">
+              {stat.value}
+            </p>
+            <p className="text-xs text-[var(--muted)] mt-0.5">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid sm:grid-cols-2 gap-4">
+        <button
+          onClick={() => onNavigate("episodes")}
+          className="flex items-center gap-3 p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--primary)] transition-colors text-left group"
+        >
+          <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 transition-colors">
+            <Plus className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-[var(--foreground)]">
+              Add New Episode
+            </p>
+            <p className="text-xs text-[var(--muted)]">
+              Create a new podcast episode
+            </p>
+          </div>
+        </button>
+        <button
+          onClick={() => onNavigate("articles")}
+          className="flex items-center gap-3 p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--primary)] transition-colors text-left group"
+        >
+          <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition-colors">
+            <Plus className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-[var(--foreground)]">
+              Add New Article
+            </p>
+            <p className="text-xs text-[var(--muted)]">
+              Write a new article
+            </p>
+          </div>
+        </button>
+      </div>
+
+      {/* Recent Content */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Recent Episodes */}
+        <div className="rounded-xl bg-[var(--surface)] border border-[var(--border)] overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
+            <h3 className="text-sm font-semibold text-[var(--foreground)] flex items-center gap-2">
+              <Mic className="w-4 h-4 text-purple-400" />
+              Recent Episodes
+            </h3>
+            <button
+              onClick={() => onNavigate("episodes")}
+              className="text-xs text-[var(--primary-light)] hover:underline"
+            >
+              View all
+            </button>
+          </div>
+          {recentEpisodes.length === 0 ? (
+            <div className="px-4 py-8 text-center text-sm text-[var(--muted)]">
+              No episodes yet
+            </div>
+          ) : (
+            <div className="divide-y divide-[var(--border)]">
+              {recentEpisodes.map((ep) => (
+                <div
+                  key={ep.slug}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-[var(--surface-light)] transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-[var(--foreground)] truncate">
+                      {ep.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-[var(--muted)]">
+                      <span className="text-[var(--primary-light)]">
+                        {ep.category}
+                      </span>
+                      <span>&middot;</span>
+                      <Clock className="w-3 h-3" />
+                      <span>{ep.date}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onEditEpisode(ep)}
+                    className="p-1.5 text-[var(--muted)] hover:text-[var(--primary)] transition-colors shrink-0"
+                    title="Edit episode"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Articles */}
+        <div className="rounded-xl bg-[var(--surface)] border border-[var(--border)] overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
+            <h3 className="text-sm font-semibold text-[var(--foreground)] flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-blue-400" />
+              Recent Articles
+            </h3>
+            <button
+              onClick={() => onNavigate("articles")}
+              className="text-xs text-[var(--primary-light)] hover:underline"
+            >
+              View all
+            </button>
+          </div>
+          {recentArticles.length === 0 ? (
+            <div className="px-4 py-8 text-center text-sm text-[var(--muted)]">
+              No articles yet
+            </div>
+          ) : (
+            <div className="divide-y divide-[var(--border)]">
+              {recentArticles.map((a) => (
+                <div
+                  key={a.slug}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-[var(--surface-light)] transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-[var(--foreground)] truncate">
+                      {a.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-[var(--muted)]">
+                      <span className="text-[var(--primary-light)]">
+                        {a.category}
+                      </span>
+                      <span>&middot;</span>
+                      <Clock className="w-3 h-3" />
+                      <span>{a.date}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onEditArticle(a)}
+                    className="p-1.5 text-[var(--muted)] hover:text-[var(--primary)] transition-colors shrink-0"
+                    title="Edit article"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Episodes View ───────────────────────────────────────────── */
+
+function EpisodesView({
+  episodes,
+  loading,
+  saving,
+  showForm,
+  editingEpisode,
+  onToggleForm,
+  onCancelForm,
+  onSave,
+  onEdit,
+  onDelete,
+}: {
+  episodes: Episode[];
+  loading: boolean;
+  saving: boolean;
+  showForm: boolean;
+  editingEpisode: Episode | null;
+  onToggleForm: () => void;
+  onCancelForm: () => void;
+  onSave: (data: Partial<Episode>, isEdit: boolean) => void;
+  onEdit: (ep: Episode) => void;
+  onDelete: (slug: string) => void;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-xl font-semibold text-[var(--foreground)]">
+          Podcast Episodes
+        </h2>
+        <button
+          onClick={onToggleForm}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          {showForm ? (
+            <X className="w-4 h-4" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
+          {showForm ? "Cancel" : "Add Episode"}
+        </button>
+      </div>
+
+      {showForm && (
+        <EpisodeForm
+          saving={saving}
+          episode={editingEpisode}
+          onSave={(data) => onSave(data, !!editingEpisode)}
+          onCancel={onCancelForm}
+        />
+      )}
+
+      {loading ? (
+        <div className="text-center py-12 text-[var(--muted)]">Loading...</div>
+      ) : episodes.length === 0 ? (
+        <div className="text-center py-12 text-[var(--muted)]">
+          <Mic className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p>No CMS episodes yet</p>
+          <p className="text-sm mt-1">
+            Click &quot;Add Episode&quot; to create one
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {episodes.map((ep) => (
+            <div
+              key={ep.slug}
+              className="flex items-center justify-between p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--border)]/80 transition-colors"
+            >
+              <div className="min-w-0 flex-1">
+                <h3 className="font-medium text-[var(--foreground)] truncate">
+                  {ep.title}
+                </h3>
+                <div className="flex items-center gap-2 mt-1 text-xs text-[var(--muted)]">
+                  <span className="text-[var(--primary-light)]">
+                    {ep.category}
+                  </span>
+                  <span>&middot;</span>
+                  <span>{ep.duration}</span>
+                  <span>&middot;</span>
+                  <span>{ep.date}</span>
+                  {ep.isPremium && (
+                    <>
+                      <span>&middot;</span>
+                      <span className="text-amber-500 font-medium">
+                        Premium
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0 ml-3">
+                <button
+                  onClick={() => onEdit(ep)}
+                  className="p-2 text-[var(--muted)] hover:text-[var(--primary)] transition-colors rounded-lg hover:bg-[var(--surface-light)]"
+                  title="Edit episode"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => onDelete(ep.slug)}
+                  className="p-2 text-[var(--muted)] hover:text-red-500 transition-colors rounded-lg hover:bg-red-500/10"
+                  title="Delete episode"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Articles View ───────────────────────────────────────────── */
+
+function ArticlesView({
+  articles,
+  loading,
+  saving,
+  showForm,
+  editingArticle,
+  onToggleForm,
+  onCancelForm,
+  onSave,
+  onEdit,
+  onDelete,
+}: {
+  articles: Article[];
+  loading: boolean;
+  saving: boolean;
+  showForm: boolean;
+  editingArticle: Article | null;
+  onToggleForm: () => void;
+  onCancelForm: () => void;
+  onSave: (data: Partial<Article>, isEdit: boolean) => void;
+  onEdit: (a: Article) => void;
+  onDelete: (slug: string) => void;
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-xl font-semibold text-[var(--foreground)]">
+          Articles
+        </h2>
+        <button
+          onClick={onToggleForm}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          {showForm ? (
+            <X className="w-4 h-4" />
+          ) : (
+            <Plus className="w-4 h-4" />
+          )}
+          {showForm ? "Cancel" : "Add Article"}
+        </button>
+      </div>
+
+      {showForm && (
+        <ArticleForm
+          saving={saving}
+          article={editingArticle}
+          onSave={(data) => onSave(data, !!editingArticle)}
+          onCancel={onCancelForm}
+        />
+      )}
+
+      {loading ? (
+        <div className="text-center py-12 text-[var(--muted)]">Loading...</div>
+      ) : articles.length === 0 ? (
+        <div className="text-center py-12 text-[var(--muted)]">
+          <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p>No CMS articles yet</p>
+          <p className="text-sm mt-1">
+            Click &quot;Add Article&quot; to create one
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {articles.map((a) => (
+            <div
+              key={a.slug}
+              className="flex items-center justify-between p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--border)]/80 transition-colors"
+            >
+              <div className="min-w-0 flex-1">
+                <h3 className="font-medium text-[var(--foreground)] truncate">
+                  {a.title}
+                </h3>
+                <div className="flex items-center gap-2 mt-1 text-xs text-[var(--muted)]">
+                  <span className="text-[var(--primary-light)]">
+                    {a.category}
+                  </span>
+                  <span>&middot;</span>
+                  <span>{a.readTime}</span>
+                  <span>&middot;</span>
+                  <span>{a.author.name}</span>
+                  <span>&middot;</span>
+                  <span>{a.date}</span>
+                  {a.featured && (
+                    <>
+                      <span>&middot;</span>
+                      <span className="text-amber-500 font-medium">
+                        Featured
+                      </span>
+                    </>
+                  )}
+                  {a.isPremium && (
+                    <>
+                      <span>&middot;</span>
+                      <span className="text-amber-500 font-medium">
+                        Premium
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0 ml-3">
+                <button
+                  onClick={() => onEdit(a)}
+                  className="p-2 text-[var(--muted)] hover:text-[var(--primary)] transition-colors rounded-lg hover:bg-[var(--surface-light)]"
+                  title="Edit article"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => onDelete(a.slug)}
+                  className="p-2 text-[var(--muted)] hover:text-red-500 transition-colors rounded-lg hover:bg-red-500/10"
+                  title="Delete article"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Episode Form ────────────────────────────────────────────── */
 
 function EpisodeForm({
   saving,
+  episode,
   onSave,
+  onCancel,
 }: {
   saving: boolean;
+  episode: Episode | null;
   onSave: (data: Partial<Episode>) => void;
+  onCancel: () => void;
 }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [summary, setSummary] = useState("");
-  const [category, setCategory] = useState("Dating");
-  const [topic, setTopic] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [duration, setDuration] = useState("30 min");
-  const [audioUrl, setAudioUrl] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
-  const [isPremium, setIsPremium] = useState(false);
-  const [tagsStr, setTagsStr] = useState("");
-  const [highlightsStr, setHighlightsStr] = useState("");
-  const [transcript, setTranscript] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const isEdit = !!episode;
+  const [title, setTitle] = useState(episode?.title ?? "");
+  const [description, setDescription] = useState(episode?.description ?? "");
+  const [summary, setSummary] = useState(episode?.summary ?? "");
+  const [category, setCategory] = useState(episode?.category ?? "Dating");
+  const [topic, setTopic] = useState(episode?.topic ?? "");
+  const [date, setDate] = useState(
+    episode?.date ?? new Date().toISOString().split("T")[0]
+  );
+  const [duration, setDuration] = useState(episode?.duration ?? "30 min");
+  const [audioUrl, setAudioUrl] = useState(episode?.audioUrl ?? "");
+  const [videoUrl, setVideoUrl] = useState(episode?.videoUrl ?? "");
+  const [isPremium, setIsPremium] = useState(episode?.isPremium ?? false);
+  const [tagsStr, setTagsStr] = useState(episode?.tags?.join(", ") ?? "");
+  const [highlightsStr, setHighlightsStr] = useState(
+    episode?.highlights?.join("\n") ?? ""
+  );
+  const [transcript, setTranscript] = useState(episode?.transcript ?? "");
+  const [showAdvanced, setShowAdvanced] = useState(isEdit);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onSave({
+    const data: Partial<Episode> = {
       title: title.trim(),
       description: description.trim(),
       summary: summary.trim(),
@@ -543,7 +1069,12 @@ function EpisodeForm({
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
-    });
+    };
+    if (isEdit) {
+      data.slug = episode!.slug;
+      data.id = episode!.id;
+    }
+    onSave(data);
   };
 
   return (
@@ -551,10 +1082,21 @@ function EpisodeForm({
       onSubmit={handleSubmit}
       className="mb-6 p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-4"
     >
-      <h3 className="font-semibold text-[var(--foreground)]">New Episode</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-[var(--foreground)]">
+          {isEdit ? "Edit Episode" : "New Episode"}
+        </h3>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="p-1.5 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="Title *" required>
+        <Field label="Title *">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -701,43 +1243,67 @@ function EpisodeForm({
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={saving || !title.trim()}
-        className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-      >
-        <Save className="w-4 h-4" />
-        {saving ? "Saving..." : "Save Episode"}
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          type="submit"
+          disabled={saving || !title.trim()}
+          className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+        >
+          <Save className="w-4 h-4" />
+          {saving
+            ? "Saving..."
+            : isEdit
+            ? "Update Episode"
+            : "Save Episode"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 rounded-lg text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] bg-[var(--surface-light)] border border-[var(--border)] transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
     </form>
   );
 }
 
-/* ── Article Form ─────────────────────────────────────────────── */
+/* ── Article Form ────────────────────────────────────────────── */
 
 function ArticleForm({
   saving,
+  article,
   onSave,
+  onCancel,
 }: {
   saving: boolean;
+  article: Article | null;
   onSave: (data: Partial<Article>) => void;
+  onCancel: () => void;
 }) {
-  const [title, setTitle] = useState("");
-  const [excerpt, setExcerpt] = useState("");
-  const [content, setContent] = useState("");
-  const [category, setCategory] = useState("Relationship Advice");
-  const [authorName, setAuthorName] = useState("");
-  const [authorRole, setAuthorRole] = useState("Editor");
-  const [readTime, setReadTime] = useState("5 min");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [tagsStr, setTagsStr] = useState("");
-  const [featured, setFeatured] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
+  const isEdit = !!article;
+  const [title, setTitle] = useState(article?.title ?? "");
+  const [excerpt, setExcerpt] = useState(article?.excerpt ?? "");
+  const [content, setContent] = useState(article?.content ?? "");
+  const [category, setCategory] = useState(
+    article?.category ?? "Relationship Advice"
+  );
+  const [authorName, setAuthorName] = useState(article?.author?.name ?? "");
+  const [authorRole, setAuthorRole] = useState(
+    article?.author?.role ?? "Editor"
+  );
+  const [readTime, setReadTime] = useState(article?.readTime ?? "5 min");
+  const [date, setDate] = useState(
+    article?.date ?? new Date().toISOString().split("T")[0]
+  );
+  const [tagsStr, setTagsStr] = useState(article?.tags?.join(", ") ?? "");
+  const [featured, setFeatured] = useState(article?.featured ?? false);
+  const [isPremium, setIsPremium] = useState(article?.isPremium ?? false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onSave({
+    const data: Partial<Article> = {
       title: title.trim(),
       excerpt: excerpt.trim(),
       content: content.trim(),
@@ -754,7 +1320,12 @@ function ArticleForm({
         .filter(Boolean),
       featured,
       isPremium,
-    });
+    };
+    if (isEdit) {
+      data.slug = article!.slug;
+      data.id = article!.id;
+    }
+    onSave(data);
   };
 
   return (
@@ -762,10 +1333,21 @@ function ArticleForm({
       onSubmit={handleSubmit}
       className="mb-6 p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-4"
     >
-      <h3 className="font-semibold text-[var(--foreground)]">New Article</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-[var(--foreground)]">
+          {isEdit ? "Edit Article" : "New Article"}
+        </h3>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="p-1.5 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="Title *" required>
+        <Field label="Title *">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -876,19 +1458,32 @@ function ArticleForm({
         </label>
       </div>
 
-      <button
-        type="submit"
-        disabled={saving || !title.trim()}
-        className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-      >
-        <Save className="w-4 h-4" />
-        {saving ? "Saving..." : "Save Article"}
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          type="submit"
+          disabled={saving || !title.trim()}
+          className="flex items-center gap-1.5 px-5 py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+        >
+          <Save className="w-4 h-4" />
+          {saving
+            ? "Saving..."
+            : isEdit
+            ? "Update Article"
+            : "Save Article"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 rounded-lg text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] bg-[var(--surface-light)] border border-[var(--border)] transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
     </form>
   );
 }
 
-/* ── Settings Form ────────────────────────────────────────────── */
+/* ── Settings Form ───────────────────────────────────────────── */
 
 function SettingsForm({
   settings,
@@ -903,16 +1498,28 @@ function SettingsForm({
   const [siteDescription, setSiteDescription] = useState(
     settings?.siteDescription ?? "Love, Relationships & Intimacy Podcast"
   );
-  const [contactEmail, setContactEmail] = useState(settings?.contactEmail ?? "");
-  const [instagram, setInstagram] = useState(settings?.socialLinks?.instagram ?? "");
+  const [contactEmail, setContactEmail] = useState(
+    settings?.contactEmail ?? ""
+  );
+  const [instagram, setInstagram] = useState(
+    settings?.socialLinks?.instagram ?? ""
+  );
   const [twitter, setTwitter] = useState(settings?.socialLinks?.twitter ?? "");
   const [youtube, setYoutube] = useState(settings?.socialLinks?.youtube ?? "");
   const [tiktok, setTiktok] = useState(settings?.socialLinks?.tiktok ?? "");
-  const [spotify, setSpotify] = useState(settings?.podcastLinks?.spotify ?? "");
-  const [applePodcasts, setApplePodcasts] = useState(settings?.podcastLinks?.applePodcasts ?? "");
-  const [googlePodcasts, setGooglePodcasts] = useState(settings?.podcastLinks?.googlePodcasts ?? "");
+  const [spotify, setSpotify] = useState(
+    settings?.podcastLinks?.spotify ?? ""
+  );
+  const [applePodcasts, setApplePodcasts] = useState(
+    settings?.podcastLinks?.applePodcasts ?? ""
+  );
+  const [googlePodcasts, setGooglePodcasts] = useState(
+    settings?.podcastLinks?.googlePodcasts ?? ""
+  );
   const [footerText, setFooterText] = useState(settings?.footerText ?? "");
-  const [enablePremium, setEnablePremium] = useState(settings?.enablePremium ?? true);
+  const [enablePremium, setEnablePremium] = useState(
+    settings?.enablePremium ?? true
+  );
 
   useEffect(() => {
     if (settings) {
@@ -954,10 +1561,7 @@ function SettingsForm({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-6"
-    >
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* General Settings */}
       <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-4">
         <h3 className="font-semibold text-[var(--foreground)]">General</h3>
@@ -993,7 +1597,7 @@ function SettingsForm({
           <input
             value={footerText}
             onChange={(e) => setFooterText(e.target.value)}
-            placeholder="e.g. © 2026 Heartcast. All rights reserved."
+            placeholder="e.g. &copy; 2026 Heartcast. All rights reserved."
             className="input-field"
           />
         </Field>
@@ -1005,7 +1609,10 @@ function SettingsForm({
             onChange={(e) => setEnablePremium(e.target.checked)}
             className="rounded"
           />
-          <label htmlFor="settings-premium" className="text-sm text-[var(--foreground)]">
+          <label
+            htmlFor="settings-premium"
+            className="text-sm text-[var(--foreground)]"
+          >
             Enable premium content
           </label>
         </div>
@@ -1052,7 +1659,9 @@ function SettingsForm({
 
       {/* Podcast Links */}
       <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-4">
-        <h3 className="font-semibold text-[var(--foreground)]">Podcast Platforms</h3>
+        <h3 className="font-semibold text-[var(--foreground)]">
+          Podcast Platforms
+        </h3>
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="Spotify">
             <input
@@ -1093,16 +1702,14 @@ function SettingsForm({
   );
 }
 
-/* ── Shared field wrapper ──────────────────────────────────────── */
+/* ── Shared field wrapper ────────────────────────────────────── */
 
 function Field({
   label,
   children,
-  required,
 }: {
   label: string;
   children: React.ReactNode;
-  required?: boolean;
 }) {
   return (
     <label className="block">
