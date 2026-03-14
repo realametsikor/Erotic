@@ -11,5 +11,9 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <AdminAuthGate>{children}</AdminAuthGate>;
+  return (
+    <div className="fixed inset-0 z-50 bg-[var(--background)] overflow-auto -mt-16">
+      <AdminAuthGate>{children}</AdminAuthGate>
+    </div>
+  );
 }
